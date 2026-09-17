@@ -1,0 +1,32 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Variables de entorno (secretos)
+.env
+
+# Datos crudos y base de datos local
+data/*.sqlite
+data/*.sqlite3
+data/*.db
+data/*.csv
+data/*.json
+data/raw/
+
+# Archivos de Jupyter
+notebooks/.ipynb_checkpoints/
+
+# IDE / SO
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
