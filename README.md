@@ -10,7 +10,7 @@ Antes de presentar cualquier cifra, conviene explicar las tres decisiones metodo
 
 ### 0.1 ¿Por qué comparar nov-2023 vs. nov-2024?
 
-El Tren Maya se inauguró en diciembre de 2023. Nov-2023 es el último corte previo a la apertura, mientras que nov-2024 es el primer corte anual completo posterior y corresponde a los Censos Económicos 2024 (una actualización exhaustiva, no incremental). Comparar un año exacto entre ambas fotos aísla el efecto del Tren Maya de variaciones estacionales: cualquier diferencia entre las dos ediciones no puede atribuirse a la estacionalidad del turismo, sino al cambio estructural en el tejido empresarial.
+El Tren Maya se inauguró en diciembre de 2023. Nov-2023 es el último corte previo a la apertura, mientras que nov-2024 es el primer corte anual completo posterior y corresponde a los Censos Económicos 2024 (una actualización exhaustiva, no incremental). Comparar un año exacto entre ambas fotos aísla el efecto del Tren Maya de variaciones estacionales: cualquier diferencia entre las dos ediciones no puede atribuirse a la estacionalidad de la demanda, sino al cambio estructural en el tejido empresarial.
 
 ### 0.2 ¿Por qué un esquema híbrido para definir nacimiento/muerte?
 
@@ -27,13 +27,13 @@ Por eso se adopta el esquema híbrido, siguiendo la lógica del Estudio de Demog
 
 Detalle operativo en `docs/metodologia.md`.
 
-### 0.3 ¿Por qué estratificar el sector turístico en 3 niveles?
+### 0.3 ¿Por qué estratificar el sector de servicios en 3 niveles?
 
-Los giros que suelen etiquetarse como "turismo" no responden igual al fenómeno. Meterlos todos en una sola bolsa introduce dos problemas:
+Los giros que suelen agruparse como "servicios" no responden igual a los mismos estímulos. Meterlos todos en una sola bolsa introduce dos problemas:
 
 1. **Circularidad causal.** El código SCIAN 4871 (transporte turístico terrestre) podría incluir al propio Tren Maya. Medir el efecto del Tren Maya incluyendo al Tren Maya en la muestra invalida el análisis.
 
-2. **Heterogeneidad no controlada.** Museos (7121) y parques recreativos (7132) tienen dinámicas muy distintas a las de un hotel: muchos son públicos y su supervivencia no depende del mercado turístico, sino del presupuesto gubernamental.
+2. **Heterogeneidad no controlada.** Museos (7121) y parques recreativos (7132) tienen dinámicas muy distintas a las de un hotel: muchos son públicos y su supervivencia no depende del mercado, sino del presupuesto gubernamental.
 
 Por eso se trabaja con tres niveles:
 
@@ -78,14 +78,14 @@ Dado que las estaciones se inauguraron por tramos en fechas distintas, la clasif
 - **Pregunta central:** ¿qué tan dinámico es el tejido empresarial de los 13 municipios de Campeche, y cómo se relaciona ese dinamismo con la paradoja de un PIB per cápita alto que no se refleja en la economía local?
 - **Objetivos específicos:**
   1. Medir nacimientos, muertes y sobrevivencia de unidades económicas entre nov-2023 y nov-2024 en todos los municipios y sectores.
-  2. Comparar el sector turístico frente al resto de la economía.
+  2. Comparar el sector de servicios frente al resto de la economía.
   3. Explorar, usando el Tren Maya como experimento natural, si los municipios conectados (grupo A) muestran un dinamismo diferencial frente a los no conectados.
   4. Relacionar los hallazgos con la paradoja del PIB: ¿el petróleo genera riqueza sin derrame en el tejido empresarial de base?
 
 ### 1.5 Hipótesis
 
 - **Hipótesis principal:** el alto PIB per cápita de Campeche coexiste con un tejido empresarial de base frágil, visible en tasas de nacimiento modestas o en una sobrevivencia concentrada en los giros más básicos.
-- **Hipótesis secundaria:** si el Tren Maya tuvo efecto, este debería concentrarse en el turismo núcleo de los municipios del grupo A (conectados y expuestos), no en el conjunto de la economía ni en los municipios no conectados.
+- **Hipótesis secundaria:** si el Tren Maya tuvo efecto, este debería concentrarse en el núcleo de servicios de los municipios del grupo A (conectados y expuestos), no en el conjunto de la economía ni en los municipios no conectados.
 
 Ambas hipótesis pueden resultar verdaderas o falsas: el diseño no presupone un resultado, solo establece qué observar para poder distinguir el efecto del Tren Maya de la dinámica general de la paradoja.
 
@@ -106,7 +106,7 @@ Este proyecto compara dos ediciones:
 | Antes (histórica) | nov-2023 | Edición 11/2023, descarga masiva |
 | Después (actual) | nov-2024 | Edición 11/2024, descarga masiva |
 
-La elección de estas dos ediciones no es arbitraria y se justifica en la sección 0.1: la edición de noviembre de 2023 es el último corte *previo* a la inauguración del Tren Maya (diciembre de 2023), mientras que la de noviembre de 2024 es el primer corte anual completo *posterior* y coincide con la actualización exhaustiva de los Censos Económicos 2024. Comparar exactamente un año entre ambas fotos permite aislar el efecto estructural del Tren Maya de las variaciones estacionales del turismo.
+La elección de estas dos ediciones no es arbitraria y se justifica en la sección 0.1: la edición de noviembre de 2023 es el último corte *previo* a la inauguración del Tren Maya (diciembre de 2023), mientras que la de noviembre de 2024 es el primer corte anual completo *posterior* y coincide con la actualización exhaustiva de los Censos Económicos 2024. Comparar exactamente un año entre ambas fotos permite aislar el efecto estructural del Tren Maya de las variaciones estacionales de la demanda.
 
 ### 2.2 ¿Por qué descarga masiva y no la API?
 
@@ -158,7 +158,7 @@ El proceso de extracción, transformación y carga (ETL) se organiza en la carpe
 
 - **Extracción:** consultas al API del DENUE para la foto actual; descarga masiva para la foto histórica.
 - **Almacenamiento:** base de datos SQLite (`data/`).
-- **Transformación:** limpieza, normalización de giros (SCIAN) y clasificación del sector turístico.
+- **Transformación:** limpieza, normalización de giros (SCIAN) y clasificación del sector de servicios.
 
 ---
 
@@ -172,13 +172,13 @@ Análisis agregado para todos los municipios y todos los giros: nacimientos, mue
 
 ---
 
-## 5. Demografía de negocios: sector turístico
+## 5. Demografía de negocios: sector de servicios
 
 *[Borrador — por completar]*
 
-Notebook: `notebooks/02_sector_turistico.ipynb`
+Notebook: `notebooks/02_sector_servicios.ipynb`
 
-Comparación del sector turístico contra el resto de los sectores, usando los niveles núcleo y ampliado, y desglose por subsector (hoteles, restaurantes, agencias de viajes). Se analiza el dinamismo diferencial en los municipios conectados por el Tren Maya.
+Comparación del sector de servicios contra el resto de los sectores, usando los niveles núcleo y ampliado, y desglose por subsector (alojamiento, alimentos y bebidas, agencias de viajes). Se analiza el dinamismo diferencial en los municipios conectados por el Tren Maya.
 
 ---
 
@@ -200,7 +200,7 @@ demografia-negocios-campeche/
 ├── etl/               # Scripts de extracción, transformación y carga
 ├── notebooks/
 │   ├── 01_panorama_general.ipynb
-│   └── 02_sector_turistico.ipynb
+│   └── 02_sector_servicios.ipynb
 ├── README.md
 ├── .env.example       # Variables de entorno de ejemplo
 ├── .gitignore

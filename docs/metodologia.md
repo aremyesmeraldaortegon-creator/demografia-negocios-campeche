@@ -45,7 +45,7 @@ La asignación fuzzy es **uno a uno** (greedy por puntaje: coincidencia de nombr
 
 ## 4. Clasificaciones auxiliares
 
-### 4.1 Sector turístico (3 niveles)
+### 4.1 Sector de servicios (3 niveles)
 
 | Nivel | SCIAN (4 dígitos) | Rol |
 |---|---|---|

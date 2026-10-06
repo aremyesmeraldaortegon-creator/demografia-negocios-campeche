@@ -5,7 +5,7 @@ Construye el panel de demografia de negocios de Campeche.
 
 - Lee data/raw/campeche_2023.csv y campeche_2024.csv
 - Normaliza fechas y claves textuales (nombre y ubicacion)
-- Clasifica el sector turistico en 3 niveles (nucleo / ampliado / excluido)
+- Clasifica el sector de servicios en 3 niveles (nucleo / ampliado / excluido)
 - Clasifica la exposicion al Tren Maya (grupos A / B / C)
 - Aplica el matching hibrido:
     1. Coincidencia por CLEE -> sobreviviente
@@ -56,8 +56,8 @@ GRUPO_TREN_MAYA = {
     "C": ["006", "007", "012", "013"],
 }
 
-# Clasificacion del sector turistico por primeros 4 digitos del SCIAN
-SCIAN_TURISMO = {
+# Clasificacion del sector de servicios por primeros 4 digitos del SCIAN
+SCIAN_SERVICIOS = {
     "nucleo": ["7211", "7225", "5615"],
     "ampliado": ["7224", "7132", "7121"],
     "excluido": ["4871"],
@@ -114,12 +114,12 @@ def normalizar_fecha_alta(valor):
     return s
 
 
-def clasificar_turismo(scian4):
-    if scian4 in SCIAN_TURISMO["nucleo"]:
+def clasificar_sector(scian4):
+    if scian4 in SCIAN_SERVICIOS["nucleo"]:
         return "nucleo"
-    if scian4 in SCIAN_TURISMO["ampliado"]:
+    if scian4 in SCIAN_SERVICIOS["ampliado"]:
         return "ampliado"
-    if scian4 in SCIAN_TURISMO["excluido"]:
+    if scian4 in SCIAN_SERVICIOS["excluido"]:
         return "excluido"
     return "resto"
 
@@ -144,7 +144,7 @@ def preparar(df: pd.DataFrame) -> pd.DataFrame:
         .map(normalizar_texto)
     )
     df["fecha_alta_norm"] = df["fecha_alta"].map(normalizar_fecha_alta)
-    df["sector_turismo"] = df["scian4"].map(clasificar_turismo)
+    df["sector_servicios"] = df["scian4"].map(clasificar_sector)
     df["grupo_tren"] = df["cve_mun"].map(clasificar_grupo_tren)
 
     nombre_vacio = df["nombre_norm"] == ""
@@ -256,13 +256,13 @@ def reportar(df23, df24, sobrevivientes, nacimientos, muertes):
 
     print()
     print("=" * 70)
-    print("  POR SECTOR TURISTICO (solo sobrevivientes/nacimientos/muertes por nivel)")
+    print("  POR SECTOR DE SERVICIOS (solo sobrevivientes/nacimientos/muertes por nivel)")
     print("=" * 70)
     print(f"  {'nivel':<10} {'N':>7} {'M':>7} {'S':>7}")
     for nivel in ["nucleo", "ampliado", "excluido", "resto"]:
-        n = int((nacimientos["sector_turismo"] == nivel).sum())
-        m = int((muertes["sector_turismo"] == nivel).sum())
-        s = int((sobrevivientes["sector_turismo"] == nivel).sum())
+        n = int((nacimientos["sector_servicios"] == nivel).sum())
+        m = int((muertes["sector_servicios"] == nivel).sum())
+        s = int((sobrevivientes["sector_servicios"] == nivel).sum())
         print(f"  {nivel:<10} {n:>7,} {m:>7,} {s:>7,}")
 
     print()
