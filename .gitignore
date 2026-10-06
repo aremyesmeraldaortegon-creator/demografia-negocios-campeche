@@ -21,6 +21,7 @@ data/*.db
 data/*.csv
 data/*.json
 data/raw/
+data/processed/
 
 # Archivos de Jupyter
 notebooks/.ipynb_checkpoints/
