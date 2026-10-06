@@ -1,6 +1,6 @@
-# Demografía de negocios en Campeche
+# Demografía de negocios en Campeche: la paradoja del PIB y el tejido empresarial
 
-Análisis de nacimientos, muertes y sobrevivencia de negocios en los 13 municipios de Campeche, comparando el DENUE (nov-2023 vs. nov-2024), con foco en el sector turístico y el Tren Maya.
+Análisis de nacimientos, muertes y sobrevivencia de negocios en los 13 municipios de Campeche a partir del DENUE (nov-2023 vs. nov-2024), para explorar por qué un PIB per cápita alto no se refleja en el dinamismo de la economía local. La apertura del Tren Maya (dic-2023) se usa como experimento natural, no como foco principal.
 
 ---
 
@@ -47,14 +47,47 @@ Por eso se trabaja con tres niveles:
 
 ## 1. Contexto y objetivo
 
-*[Borrador — por completar]*
+### 1.1 La paradoja del PIB campechano
 
-La paradoja del PIB campechano: Campeche tiene uno de los PIB per cápita más altos del país por la actividad petrolera, pero eso no se refleja necesariamente en el dinamismo de su economía local. Mi objetivo es explorar esta paradoja a través de la demografía de los negocios, usando como "experimento natural" la apertura del Tren Maya en diciembre de 2023.
+Campeche encarna una de las paradojas económicas más marcadas de México: figura entre los estados con mayor **PIB per cápita** del país, gracias a la extracción de hidrocarburos en la Sonda de Campeche, y sin embargo ese indicador convive con una economía local de escaso dinamismo y con niveles altos de rezago social. La explicación es estructural: la actividad petrolera funciona como una **economía de enclave**. Es intensiva en capital, se concentra en plataformas marinas lejos de los municipios y tiene poco derrame sobre el comercio y los servicios que sostienen la vida económica cotidiana. Genera renta, no necesariamente empleo ni dinamismo de base.
 
-- **Pregunta central:** ¿cómo cambió el tejido empresarial de los municipios de Campeche tras la apertura del Tren Maya?
+El PIB per cápita, al dividir una producción extraordinariamente grande entre una población relativamente pequeña, produce una cifra engañosa: lee como "riqueza" lo que en realidad es extracción concentrada. Para saber qué tan sana está la economía *local* conviene mirar un indicador distinto: la **demografía de los negocios**, es decir, cuántas unidades económicas nacen, mueren y sobreviven.
+
+### 1.2 ¿Por qué la demografía de los negocios?
+
+El dinamismo de una economía local no se observa bien en la producción agregada, sino en el flujo de sus unidades económicas. Si los negocios nacen y sobreviven, el tejido productivo de base es saludable; si mueren más de los que nacen, la actividad económica se contrae aunque el PIB estatal siga alto por la renta petrolera. Medir nacimientos, muertes y sobrevivencia permite, por tanto, mirar *debajo* del PIB y observar el pulso real de los municipios.
+
+El instrumento para hacerlo es el **Directorio Estadístico Nacional de Unidades Económicas (DENUE)** del INEGI, que al compararse entre dos ediciones (nov-2023 y nov-2024) revela las altas y las bajas del tejido empresarial. Este es el corazón del proyecto.
+
+### 1.3 El Tren Maya como experimento natural (una hipótesis, no el eje)
+
+Dentro de esta pregunta más amplia, la apertura del **Tren Maya** en diciembre de 2023 cumple un papel metodológico específico: funciona como un **experimento natural**. Se trata de un choque externo a la economía local, con fecha de inicio conocida y geografía discreta (un municipio está *conectado* si alberga una estación y *no conectado* si no), lo que permite explorar si el dinamismo empresarial difiere entre ambos grupos. Es una herramienta de identificación muy valiosa, pero **no es el foco principal**: es una de las posibles explicaciones del dinamismo diferencial, no la pregunta que estructura todo el análisis.
+
+Dado que las estaciones se inauguraron por tramos en fechas distintas, la clasificación operativa distingue tres grupos según su **exposición real** durante la ventana de análisis (nov-2023 a nov-2024):
+
+| Grupo | Municipios | Justificación |
+|---|---|---|
+| A. Conectados y expuestos | Calkiní, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega | Estaciones operativas desde dic-2023 |
+| B. Conectados, exposición marginal | Carmen, Calakmul, Candelaria | Estaciones del Tramo 7, abiertas hasta dic-2024 (después del corte nov-2024) |
+| C. No conectados | Hopelchén, Palizada, Seybaplaya, Dzitbalché | Sin estación |
+
+> Las fechas exactas de apertura de cada estación deben confirmarse contra la fuente oficial de FONATUR / Olmeca-Maya-Mexica antes de fijar esta clasificación como definitiva.
+
+### 1.4 Pregunta central y objetivos
+
+- **Pregunta central:** ¿qué tan dinámico es el tejido empresarial de los 13 municipios de Campeche, y cómo se relaciona ese dinamismo con la paradoja de un PIB per cápita alto que no se refleja en la economía local?
 - **Objetivos específicos:**
-  - Medir nacimientos, muertes y sobrevivencia de unidades económicas entre dos ediciones del DENUE.
-  - Comparar el sector turístico frente al resto de la economía.
+  1. Medir nacimientos, muertes y sobrevivencia de unidades económicas entre nov-2023 y nov-2024 en todos los municipios y sectores.
+  2. Comparar el sector turístico frente al resto de la economía.
+  3. Explorar, usando el Tren Maya como experimento natural, si los municipios conectados (grupo A) muestran un dinamismo diferencial frente a los no conectados.
+  4. Relacionar los hallazgos con la paradoja del PIB: ¿el petróleo genera riqueza sin derrame en el tejido empresarial de base?
+
+### 1.5 Hipótesis
+
+- **Hipótesis principal:** el alto PIB per cápita de Campeche coexiste con un tejido empresarial de base frágil, visible en tasas de nacimiento modestas o en una sobrevivencia concentrada en los giros más básicos.
+- **Hipótesis secundaria:** si el Tren Maya tuvo efecto, este debería concentrarse en el turismo núcleo de los municipios del grupo A (conectados y expuestos), no en el conjunto de la economía ni en los municipios no conectados.
+
+Ambas hipótesis pueden resultar verdaderas o falsas: el diseño no presupone un resultado, solo establece qué observar para poder distinguir el efecto del Tren Maya de la dinámica general de la paradoja.
 
 ---
 
