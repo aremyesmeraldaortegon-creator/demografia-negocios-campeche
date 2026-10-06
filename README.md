@@ -152,41 +152,39 @@ El sufijo `04_` en el nombre del archivo corresponde a la clave de entidad feder
 
 ## 3. Extracción y almacenamiento (ETL)
 
-*[Borrador — por completar]*
+El proceso de extracción, transformación y carga se organiza en la carpeta `etl/`. El detalle metodológico vive en `docs/metodologia.md`.
 
-El proceso de extracción, transformación y carga (ETL) se organiza en la carpeta `etl/`. El detalle metodológico vive en `docs/metodologia.md`.
-
-- **Extracción:** consultas al API del DENUE para la foto actual; descarga masiva para la foto histórica.
-- **Almacenamiento:** base de datos SQLite (`data/`).
-- **Transformación:** limpieza, normalización de giros (SCIAN) y clasificación del sector de servicios.
+- **Extracción:** descarga masiva del DENUE para **ambas** ediciones (nov-2023 y nov-2024) desde el portal del INEGI. El API solo se usa para consultas puntuales de la edición vigente.
+- **Procesamiento:** `etl/01_procesar_descarga.py` filtra los CSV crudos a Campeche (`cve_ent == "04"`) y genera `data/raw/campeche_YYYY.csv`.
+- **Matching y clasificación:** `etl/02_matching_demografia.py` normaliza, clasifica (sector de servicios y grupo Tren Maya) y aplica el matching híbrido.
+- **Almacenamiento:** base de datos SQLite (`data/denue.db`).
 
 ---
 
 ## 4. Demografía de negocios: panorama general
 
-*[Borrador — por completar]*
-
 Notebook: `notebooks/01_panorama_general.ipynb`
 
-Análisis agregado para todos los municipios y todos los giros: nacimientos, muertes y sobrevivencia por municipio, tasas de entrada y salida, y distribución por sector y tamaño de establecimiento.
+Análisis agregado para todos los municipios y todos los giros. Calcula por municipio la tasa de supervivencia (`S/U23`), natalidad (`N/U24`), mortalidad (`M/U23`) y crecimiento neto (`(U24-U23)/U23`), además de la distribución por sector de servicios y por tamaño (personal ocupado).
 
 ---
 
 ## 5. Demografía de negocios: sector de servicios
 
-*[Borrador — por completar]*
-
 Notebook: `notebooks/02_sector_servicios.ipynb`
 
-Comparación del sector de servicios contra el resto de los sectores, usando los niveles núcleo y ampliado, y desglose por subsector (alojamiento, alimentos y bebidas, agencias de viajes). Se analiza el dinamismo diferencial en los municipios conectados por el Tren Maya.
+Comparación del sector de servicios contra el resto de la economía, con desglose por nivel (núcleo, ampliado, excluido) y subsector (alojamiento, alimentos y bebidas, agencias de viajes, bares, parques, museos). Analiza el dinamismo diferencial por grupo de exposición al Tren Maya (A/B/C) y calcula el índice de dinamismo del sector de servicios. Exporta las tablas clave a `data/processed/`.
 
 ---
 
 ## 6. Hallazgos y conclusión
 
-*[Borrador — por completar]*
+- **Crecimiento generalizado pero desigual:** entre nov-2023 y nov-2024 la base de unidades pasó de 41,783 a 46,923 (+12.3%), con natalidad superior a mortalidad en 12 de los 13 municipios.
+- **Dinamismo concentrado en municipios pequeños:** Calakmul (+29.1%), Dzitbalché (+28.3%) y Hopelchén (+25.7%) encabezan el crecimiento neto; Palizada es el único municipio en contracción.
+- **Tejido microempresarial:** el 85.7% de las unidades tiene entre 0 y 5 personas, lo que confirma una economía local de baja escala, coherente con la paradoja del PIB (riqueza petrolera sin derrame en el tejido de base).
+- **El sector de servicios es minoritario y su dinamismo se concentra en el grupo B:** el índice de dinamismo del sector de servicios es +0.0127 a nivel global, positivo sobre todo en Carmen, Calakmul y Candelaria (grupo B).
 
-Resumen de los resultados principales y su relación con la paradoja del PIB campechano. Pendiente de redactar una vez terminado el análisis.
+> **Nota de interpretación:** parte del crecimiento observado puede reflejar la mejor cobertura de los Censos Económicos 2024, no solo nueva actividad económica.
 
 ---
 
@@ -220,4 +218,4 @@ pip install -r requirements.txt
 cp .env.example .env         # y llena tu INEGI_TOKEN
 ```
 
-*Pasos de instalación pendientes de validar.*
+Los pasos de instalación han sido validados en Windows con Python 3.14.

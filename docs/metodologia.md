@@ -90,3 +90,30 @@ Sobrevivientes + Nacimientos == unidades 2024
 | Muertes | 12,799 |
 
 > **Registro de cambio:** el conteo original (30,130 sobrevivientes) se corrigió aplicando la exclusión de nombres genéricos descrita en la sección 2.1, lo que eliminó 1,146 matches fuzzy espurios.
+
+## 7. Análisis
+
+El análisis se realiza en dos notebooks que leen de `data/denue.db` (con fallback automático: si la base no existe, se regenera ejecutando `etl/02_matching_demografia.py`):
+
+- **`notebooks/01_panorama_general.ipynb`**: panorama agregado por municipio y sector, distribución por tamaño y verificación de consistencia.
+- **`notebooks/02_sector_servicios.ipynb`**: sector de servicios (núcleo vs resto, niveles y subsectores), grupos de exposición al Tren Maya e índice de dinamismo; exporta tablas a `data/processed/`.
+
+### 7.1 Métricas
+
+| Métrica | Fórmula |
+|---|---|
+| Tasa de supervivencia | `S / U23` |
+| Tasa de natalidad | `N / U24` |
+| Tasa de mortalidad | `M / U23` |
+| Crecimiento neto | `(U24 - U23) / U23` |
+| Índice de dinamismo del sector de servicios | `(N_núcleo / N_total) - (M_núcleo / M_total)` |
+
+### 7.2 Hallazgos preliminares
+
+- Crecimiento neto positivo y generalizado (+12.3%), con natalidad superior a mortalidad en 12 de los 13 municipios.
+- Mayor crecimiento neto en municipios pequeños: Calakmul (+29.1%), Dzitbalché (+28.3%) y Hopelchén (+25.7%).
+- Palizada es el único municipio en contracción.
+- El 85.7% de las unidades son microempresas (0-5 personas), coherente con la paradoja del PIB campechano.
+- El índice de dinamismo del sector de servicios es +0.0127 a nivel global y se concentra en el grupo B (+0.0186).
+
+> **Nota de interpretación:** la edición nov-2024 está ligada a los Censos Económicos 2024 (actualización exhaustiva), por lo que parte del crecimiento observado puede deberse a una mejor cobertura censal y no solo a nueva actividad económica.
