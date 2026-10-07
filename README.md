@@ -179,12 +179,52 @@ Comparación del sector de servicios contra el resto de la economía, con desglo
 
 ## 6. Hallazgos y conclusión
 
-- **Crecimiento generalizado pero desigual:** entre nov-2023 y nov-2024 la base de unidades pasó de 41,783 a 46,923 (+12.3%), con natalidad superior a mortalidad en 12 de los 13 municipios.
+### 6.1 ¿Es el crecimiento un indicador de desarrollo?
+
+La respuesta matizada es: **no necesariamente**. El crecimiento de +12.3% en el número de unidades económicas (de 41,783 a 46,923) esconde una realidad de **alta rotación empresarial** más que de desarrollo sostenido:
+
+- Solo el **69.4%** de los negocios de 2023 sobrevivió a 2024 (28,984 de 41,783); el **30.6%** murió (12,799 negocios).
+- El crecimiento neto (+5,140 unidades) se explica por **17,939 nacimientos**, no por el fortalecimiento de los negocios existentes.
+- El **85.7%** de las unidades son microempresas (0-5 personas): el tejido productivo no se diversifica ni escala.
+- El **índice de dinamismo del grupo A** (municipios con Tren Maya operativo) es **negativo (−0.0050)**, lo que sugiere que el Tren Maya no ha dinamizado los negocios existentes.
+
+### 6.2 Conclusión clave: hay más "reemplazo" que "desarrollo"
+
+El crecimiento neto positivo coexiste con una alta mortalidad y una base microempresarial: nacen muchos negocios y mueren casi tantos. La economía local **se reemplaza más de lo que se desarrolla**. Esta rotación es coherente con la paradoja del PIB campechano: la renta petrolera no se traduce en un tejido empresarial robusto y acumulativo, sino en un flujo constante de aperturas y cierres.
+
+### 6.3 Otros hallazgos
+
+- **Crecimiento generalizado pero desigual:** natalidad superior a mortalidad en 12 de los 13 municipios.
 - **Dinamismo concentrado en municipios pequeños:** Calakmul (+29.1%), Dzitbalché (+28.3%) y Hopelchén (+25.7%) encabezan el crecimiento neto; Palizada es el único municipio en contracción.
-- **Tejido microempresarial:** el 85.7% de las unidades tiene entre 0 y 5 personas, lo que confirma una economía local de baja escala, coherente con la paradoja del PIB (riqueza petrolera sin derrame en el tejido de base).
 - **El sector de servicios es minoritario y su dinamismo se concentra en el grupo B:** el índice de dinamismo del sector de servicios es +0.0127 a nivel global, positivo sobre todo en Carmen, Calakmul y Candelaria (grupo B).
 
-> **Nota de interpretación:** parte del crecimiento observado puede reflejar la mejor cobertura de los Censos Económicos 2024, no solo nueva actividad económica.
+> **Nota de interpretación:** parte del crecimiento observado puede reflejar la mejor cobertura de los Censos Económicos 2024, no solo nueva actividad económica. Los datos no permiten distinguir con certeza entre reemplazo puro, renovación positiva o artefacto censal.
+
+---
+
+## Dashboard interactivo
+
+El proyecto incluye un dashboard web autocontenido, generado con Plotly y publicado en GitHub Pages.
+
+- **URL pública:** `https://aremyesmeraldaortegon-creator.github.io/demografia-negocios-campeche/`
+- **Archivo:** `docs/index.html` (autocontenido: incluye Plotly.js y el GeoJSON del mapa, sin dependencias externas).
+- **Secciones:** KPIs, mapa coroplético de crecimiento neto por municipio, tasas por municipio, distribución por tamaño, sector de servicios, índice de dinamismo por grupo Tren Maya, top 5 y tabla completa con descarga de CSVs.
+
+### Regenerar el dashboard
+
+```bash
+python dashboard/generar_dashboard.py
+```
+
+> Requiere `plotly` (ya en `requirements.txt`). Lee `data/denue.db` y el GeoJSON `dashboard/campeche_municipios.geojson`, y escribe `docs/index.html`.
+
+### Publicar en GitHub Pages
+
+1. Repositorio → **Settings** → **Pages**.
+2. En *Source*, elegir **Deploy from a branch**.
+3. Rama `main`, carpeta `/docs` → **Save**.
+
+Tras unos minutos, el dashboard queda disponible en la URL pública (el repositorio debe ser público para GitHub Pages gratuito).
 
 ---
 
@@ -193,8 +233,12 @@ Comparación del sector de servicios contra el resto de la economía, con desglo
 ```
 demografia-negocios-campeche/
 ├── data/              # Datos crudos y base SQLite (ignorados por git)
+├── dashboard/
+│   ├── generar_dashboard.py        # Genera docs/index.html
+│   └── campeche_municipios.geojson # GeoJSON de los 13 municipios
 ├── docs/
-│   └── metodologia.md # Metodología detallada
+│   ├── index.html      # Dashboard (autocontenido)
+│   └── metodologia.md  # Metodología detallada
 ├── etl/               # Scripts de extracción, transformación y carga
 ├── notebooks/
 │   ├── 01_panorama_general.ipynb

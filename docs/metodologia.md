@@ -115,5 +115,14 @@ El análisis se realiza en dos notebooks que leen de `data/denue.db` (con fallba
 - Palizada es el único municipio en contracción.
 - El 85.7% de las unidades son microempresas (0-5 personas), coherente con la paradoja del PIB campechano.
 - El índice de dinamismo del sector de servicios es +0.0127 a nivel global y se concentra en el grupo B (+0.0186).
+- **Alta rotación empresarial:** solo el 69.4% de los negocios de 2023 sobrevivió a 2024 (28,984 de 41,783) y el 30.6% murió (12,799). El crecimiento neto se explica por nacimientos, no por fortalecimiento del tejido existente.
 
 > **Nota de interpretación:** la edición nov-2024 está ligada a los Censos Económicos 2024 (actualización exhaustiva), por lo que parte del crecimiento observado puede deberse a una mejor cobertura censal y no solo a nueva actividad económica.
+
+### 7.3 Limitaciones e interpretación crítica
+
+**Crecimiento bruto vs. desarrollo sostenido.** El crecimiento neto (+12.3%) no equivale a desarrollo empresarial. Un +12.3% es compatible con un tejido que se *reemplaza*: se abren muchos negocios y se cierran casi tantos. La evidencia de esto es que solo el 69.4% de las unidades de 2023 sobrevivió a 2024 y que el crecimiento neto se debe a 17,939 nacimientos, no a la expansión de los negocios existentes. Un indicador de desarrollo debería mostrar sobrevivencia alta y escalamiento (más unidades grandes); aquí se observa lo contrario: sobrevivencia del 69.4% y un tejido dominado por microempresas (85.7% con 0-5 personas).
+
+**Posible artefacto de cobertura censal.** La edición nov-2024 está ligada a los Censos Económicos 2024, una actualización *exhaustiva* (no incremental) que tiende a capturar más unidades que una edición intermedia. Parte del crecimiento observado —y parte de los "nacimientos"— puede reflejar mejor cobertura más que creación real de negocios. Esto es especialmente relevante en Carmen (grupo B), que muestra la mayor tasa de entrada.
+
+**Reemplazo, renovación o artefacto: no son distinguibles con estos datos.** Con solo dos cortes (nov-2023 y nov-2024) no es posible separar con certeza el *reemplazo puro* (cierre y apertura de giros similares), la *renovación positiva* (negocios que cierran para reabrir mejor capitalizados) del *artefacto censal*. La interpretación de "más reemplazo que desarrollo" es, por tanto, una hipótesis robusta pero no una medición causal definitiva.
