@@ -173,6 +173,35 @@ def fig_top5(res):
     return fig
 
 
+def fig_donut_nucleo(sobre):
+    subs = {
+        "7211": "Alojamiento",
+        "7225": "Alimentos y bebidas",
+        "5615": "Agencias de viajes",
+    }
+    d = sobre[sobre["sector_servicios"] == "nucleo"].copy()
+    d["sub"] = d["scian4"].map(subs)
+    conteo = d["sub"].value_counts()
+    fig = go.Figure(go.Pie(labels=conteo.index, values=conteo.values, hole=0.5,
+                           marker=dict(colors=[AZUL, NARANJA, VERDE]),
+                           textinfo="label+percent", textfont=dict(size=14)))
+    fig.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10),
+                      legend=dict(orientation="h"),
+                      title="Composición del núcleo de servicios (sobrevivientes)")
+    return fig
+
+
+def fig_donut_supervivencia(s_total, m_total):
+    fig = go.Figure(go.Pie(labels=["Sobrevivieron", "Murieron"],
+                           values=[s_total, m_total], hole=0.5,
+                           marker=dict(colors=[VERDE, ROJO]),
+                           textinfo="label+percent", textfont=dict(size=14)))
+    fig.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10),
+                      legend=dict(orientation="h"),
+                      title="Destino de los negocios de 2023")
+    return fig
+
+
 def fig_mapa(res, geojson):
     fig = go.Figure(go.Choropleth(
         geojson=geojson,
@@ -299,6 +328,8 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
     .hallazgo.neg { background:#fdf0ef; border-left-color:#d62728; color:#7a2020; }
     .conclusion { background:#fff7e6; border:1px solid #ffd58a; }
     .figura { margin-top:8px; }
+    .fig-dos { display:flex; flex-wrap:wrap; gap:16px; }
+    .fig-dos > div { flex:1 1 400px; min-width:340px; }
     .tabla { width:100%; border-collapse:collapse; font-size:.9rem; margin-top:12px; }
     .tabla th, .tabla td { padding:9px 12px; border-bottom:1px solid #e4e7eb; text-align:left; }
     .tabla th { background:#eef2f7; color:#14395e; }
@@ -348,7 +379,9 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
 
     sector = seccion(
         "4", "Sector de servicios",
-        "Distribuye las unidades según su nivel en el sector de servicios. Los niveles son:<br>"
+        "Los códigos como <b>7211</b> son códigos <b>SCIAN</b> (Sistema de Clasificación "
+        "Industrial de América del Norte, del INEGI): los primeros cuatro dígitos identifican "
+        "el giro del negocio. Los niveles son:<br>"
         "· <b>Núcleo</b> — alojamiento (7211), alimentos y bebidas (7225) y agencias de viajes "
         "(5615). Es el análisis principal.<br>"
         "· <b>Ampliado</b> — bares y centros nocturnos (7224), parques recreativos (7132) y "
@@ -359,7 +392,7 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
         f"El núcleo de servicios es minoritario ({nucleo_sobre:,} sobrevivientes frente a "
         f"{resto_sobre:,} del resto). Es ahí donde se esperaría ver el efecto del Tren Maya, "
         "pero su peso en el total es pequeño.",
-        figs_html["sector"],
+        f'<div class="fig-dos">{figs_html["sector"]}{figs_html["sector_donut"]}</div>',
     )
 
     indice = seccion(
@@ -440,6 +473,7 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
   microempresas, y el Tren Maya (grupo A) muestra un índice de dinamismo negativo. La economía
   campechana se <b>reemplaza más de lo que se desarrolla</b>, lo que da sentido a la paradoja
   del PIB: la renta petrolera no se traduce en un tejido empresarial robusto y acumulativo.</div>
+  <div class="figura">{figs_html["donut_supervivencia"]}</div>
 </section>
 
 <section class="tarjeta">
@@ -497,8 +531,10 @@ def main():
         "tasas": fig_tasas(res),
         "tamano": fig_tamano(df23, df24),
         "sector": fig_sector(sobre, nac, mue),
+        "sector_donut": fig_donut_nucleo(sobre),
         "indice": fig_ind,
         "top5": fig_top5(res),
+        "donut_supervivencia": fig_donut_supervivencia(len(sobre), len(mue)),
     }
 
     figs_html = {}
