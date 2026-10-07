@@ -49,6 +49,11 @@ ORDEN_TAM = [
 
 NIVELES = ["nucleo", "ampliado", "excluido", "resto"]
 
+NIVELES_ETIQUETAS = {
+    "nucleo": "Núcleo", "ampliado": "Ampliado",
+    "excluido": "Excluido", "resto": "Resto",
+}
+
 
 # ============================================================
 # Datos
@@ -182,12 +187,16 @@ def fig_donut_nucleo(sobre):
     d = sobre[sobre["sector_servicios"] == "nucleo"].copy()
     d["sub"] = d["scian4"].map(subs)
     conteo = d["sub"].value_counts()
-    fig = go.Figure(go.Pie(labels=conteo.index, values=conteo.values, hole=0.5,
-                           marker=dict(colors=[AZUL, NARANJA, VERDE]),
-                           textinfo="label+percent", textfont=dict(size=14)))
-    fig.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10),
-                      legend=dict(orientation="h"),
-                      title="Composición del núcleo de servicios (sobrevivientes)")
+    total = int(conteo.sum())
+    fig = go.Figure(go.Pie(labels=conteo.index, values=conteo.values, hole=0.55,
+                           marker=dict(colors=["#4e79a7", "#f28e2b", "#76b7b2"]),
+                           textinfo="percent", textposition="inside",
+                           textfont=dict(size=15)))
+    fig.add_annotation(x=0.5, y=0.5, showarrow=False,
+                       text=f"<b>{total:,}</b><br><span style='font-size:12px;color:#52606d'>sobrevivientes</span>",
+                       font=dict(size=20))
+    fig.update_layout(height=460, margin=dict(l=10, r=10, t=30, b=10),
+                      legend=dict(orientation="h", yanchor="bottom", y=-0.15))
     return fig
 
 
@@ -246,6 +255,34 @@ def seccion(numero, titulo, que_es, hallazgo, fig_html):
 </section>"""
 
 
+def tabla_niveles(df23, df24, sobre, nac, mue):
+    u23 = df23.groupby("sector_servicios").size()
+    u24 = df24.groupby("sector_servicios").size()
+    s = sobre.groupby("sector_servicios").size()
+    n = nac.groupby("sector_servicios").size()
+    m = mue.groupby("sector_servicios").size()
+    r = pd.DataFrame({"U23": u23, "U24": u24, "Sobrevivientes": s,
+                      "Nacimientos": n, "Muertes": m}).reindex(NIVELES).fillna(0).astype(int)
+    r["crecimiento"] = ((r["U24"] - r["U23"]) / r["U23"] * 100).round(1)
+    filas = ""
+    for nivel in NIVELES:
+        row = r.loc[nivel]
+        color = VERDE if row["crecimiento"] >= 0 else ROJO
+        filas += (
+            f'<tr><td><b>{NIVELES_ETIQUETAS[nivel]}</b></td>'
+            f'<td class="num">{row["U23"]:,}</td><td class="num">{row["U24"]:,}</td>'
+            f'<td class="num">{row["Sobrevivientes"]:,}</td><td class="num">{row["Nacimientos"]:,}</td>'
+            f'<td class="num">{row["Muertes"]:,}</td>'
+            f'<td class="num" style="color:{color};font-weight:600;">{row["crecimiento"]:+.1f}%</td></tr>'
+        )
+    return (
+        '<table class="tabla"><thead><tr>'
+        '<th>Nivel</th><th>U23</th><th>U24</th><th>Sobrevivientes</th><th>Nacimientos</th>'
+        '<th>Muertes</th><th>Crec. neto</th>'
+        '</tr></thead><tbody>' + filas + '</tbody></table>'
+    )
+
+
 def tabla_html(res):
     filas = ""
     for _, r in res.sort_values("crecimiento_neto", ascending=False).iterrows():
@@ -267,7 +304,7 @@ def tabla_html(res):
     )
 
 
-def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
+def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_grupo):
     total_23 = int(res["U23"].sum())
     total_24 = int(res["U24"].sum())
     n_total = len(nac)
@@ -316,18 +353,24 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
     .kpi-titulo { font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:#52606d; }
     .kpi-valor { font-size:2rem; font-weight:700; margin:6px 0 2px; }
     .kpi-sub { font-size:.78rem; color:#7b8794; }
-    .tarjeta { background:#fff; border-radius:14px; padding:30px 32px; margin:28px 0;
+    .tarjeta { background:#fff; border-radius:14px; padding:34px 36px; margin:32px 0;
                box-shadow: 0 1px 5px rgba(0,0,0,.08); }
     .sec-cab { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
     .sec-num { background:#1f77b4; color:#fff; font-weight:700; border-radius:8px;
                padding:4px 12px; font-size:.95rem; }
     .sec-cab h2 { margin:0; font-size:1.45rem; color:#14395e; }
-    .que-es { color:#3e4c59; margin:8px 0 14px; font-size:1rem; }
+    .que-es { color:#3e4c59; margin:8px 0 14px; font-size:1.02rem; }
     .hallazgo { background:#eef7f0; border-left:4px solid #2ca02c; color:#1f5130;
                 padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:.97rem; }
     .hallazgo.neg { background:#fdf0ef; border-left-color:#d62728; color:#7a2020; }
+    .subsec { margin:24px 0 8px; font-size:1.1rem; color:#14395e;
+              border-bottom:2px solid #e4e7eb; padding-bottom:6px; }
+    .scorp { margin-top:18px; background:#f8fafc; border:1px solid #e4e7eb;
+             border-radius:8px; padding:12px 16px; }
+    .scorp summary { cursor:pointer; font-weight:600; color:#14395e; }
+    .scorp p { margin:10px 0 0; font-size:.95rem; }
     .conclusion { background:#fff7e6; border:1px solid #ffd58a; }
-    .figura { margin-top:8px; }
+    .figura { margin-top:14px; }
     .fig-dos { display:flex; flex-wrap:wrap; gap:16px; }
     .fig-dos > div { flex:1 1 400px; min-width:340px; }
     .tabla { width:100%; border-collapse:collapse; font-size:.9rem; margin-top:12px; }
@@ -377,23 +420,33 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
         figs_html["tamano"],
     )
 
-    sector = seccion(
-        "4", "Sector de servicios",
-        "Los códigos como <b>7211</b> son códigos <b>SCIAN</b> (Sistema de Clasificación "
-        "Industrial de América del Norte, del INEGI): los primeros cuatro dígitos identifican "
-        "el giro del negocio. Los niveles son:<br>"
-        "· <b>Núcleo</b> — alojamiento (7211), alimentos y bebidas (7225) y agencias de viajes "
-        "(5615). Es el análisis principal.<br>"
-        "· <b>Ampliado</b> — bares y centros nocturnos (7224), parques recreativos (7132) y "
-        "museos (7121). Se usa como robustez.<br>"
-        "· <b>Excluido</b> — transporte turístico terrestre (4871), excluido por circularidad "
-        "(podría incluir al propio Tren Maya).<br>"
-        "· <b>Resto</b> — todos los demás giros de la economía.",
-        f"El núcleo de servicios es minoritario ({nucleo_sobre:,} sobrevivientes frente a "
-        f"{resto_sobre:,} del resto). Es ahí donde se esperaría ver el efecto del Tren Maya, "
-        "pero su peso en el total es pequeño.",
-        f'<div class="fig-dos">{figs_html["sector"]}{figs_html["sector_donut"]}</div>',
-    )
+    sector = f"""
+<section class="tarjeta">
+  <div class="sec-cab"><span class="sec-num">4</span><h2>Sector de servicios</h2></div>
+  <div class="que-es">El sector de servicios se divide en <b>niveles</b> según su código SCIAN.
+  El <b>núcleo</b> agrupa alojamiento, alimentos y bebidas, y agencias de viajes; es ahí donde
+  se esperaría ver el efecto del Tren Maya.</div>
+  <div class="hallazgo"><strong>Hallazgo:</strong> el núcleo es minoritario
+  ({nucleo_sobre:,} sobrevivientes frente a {resto_sobre:,} del resto), así que su peso en la
+  economía total es pequeño.</div>
+
+  <h3 class="subsec">A) Composición del núcleo de servicios</h3>
+  <div class="figura">{figs_html["sector_donut"]}</div>
+
+  <h3 class="subsec">B) Comparación entre niveles</h3>
+  <div class="figura">{tabla_niveles(df23, df24, sobre, nac, mue)}</div>
+
+  <details class="scorp">
+    <summary>¿Qué significan los códigos SCIAN y los niveles?</summary>
+    <p>Los códigos como <b>7211</b> pertenecen al <b>SCIAN</b> (Sistema de Clasificación
+    Industrial de América del Norte, del INEGI); sus primeros cuatro dígitos identifican el
+    giro del negocio.<br>
+    · <b>Núcleo</b> — alojamiento (7211), alimentos y bebidas (7225), agencias de viajes (5615).<br>
+    · <b>Ampliado</b> — bares y centros nocturnos (7224), parques recreativos (7132), museos (7121).<br>
+    · <b>Excluido</b> — transporte turístico terrestre (4871), excluido por circularidad.<br>
+    · <b>Resto</b> — todos los demás giros de la economía.</p>
+  </details>
+</section>"""
 
     indice = seccion(
         "5", "Índice de dinamismo del sector de servicios",
@@ -530,7 +583,6 @@ def main():
         "mapa": fig_mapa(res, geojson),
         "tasas": fig_tasas(res),
         "tamano": fig_tamano(df23, df24),
-        "sector": fig_sector(sobre, nac, mue),
         "sector_donut": fig_donut_nucleo(sobre),
         "indice": fig_ind,
         "top5": fig_top5(res),
@@ -547,7 +599,7 @@ def main():
         )
         primero = False
 
-    html = construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo)
+    html = construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_grupo)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(html, encoding="utf-8")
