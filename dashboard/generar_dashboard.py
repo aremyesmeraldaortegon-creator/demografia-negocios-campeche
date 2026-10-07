@@ -163,7 +163,8 @@ def fig_indice(nac, mue):
     fig = go.Figure(go.Bar(x=s.index, y=s.values, marker_color=colores,
                             text=[f"{v:+.4f}" for v in s.values], textposition="outside"))
     fig.update_layout(height=420, margin=dict(l=10, r=10, t=30, b=40),
-                      yaxis_title="(N_núcleo / N_total) - (M_núcleo / M_total)")
+                      yaxis_title="Índice de dinamismo")
+    fig.update_yaxes(range=[-0.015, 0.025])
     fig.add_hline(y=0, line_dash="dash", line_color=GRIS)
     return fig, s
 
@@ -369,6 +370,8 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
              border-radius:8px; padding:12px 16px; }
     .scorp summary { cursor:pointer; font-weight:600; color:#14395e; }
     .scorp p { margin:10px 0 0; font-size:.95rem; }
+    .lectura { background:#eef4fb; border-left:4px solid #1f77b4; color:#2c3e50;
+               padding:12px 16px; border-radius:8px; margin-top:14px; font-size:.95rem; }
     .conclusion { background:#fff7e6; border:1px solid #ffd58a; }
     .figura { margin-top:14px; }
     .fig-dos { display:flex; flex-wrap:wrap; gap:16px; }
@@ -465,7 +468,15 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
         f"El índice global es <b>{idx_global:+.4f}</b>, pero el dinamismo positivo se concentra "
         f"en el <b>grupo B</b> ({idx_grupo['B']:+.4f}); los grupos A ({idx_grupo['A']:+.4f}) y "
         f"C ({idx_grupo['C']:+.4f}) son cercanos a cero o negativos.",
-        figs_html["indice"],
+        figs_html["indice"] + (
+            '<div class="lectura"><strong>¿Cómo leer esto?</strong><br>'
+            '· Valor <b>positivo</b> → el núcleo de servicios gana peso en la economía.<br>'
+            '· Valor <b>negativo</b> → el núcleo pierde peso.<br>'
+            '· <b>Grupo A</b> (expuestos): −0.0050 → el Tren Maya no ha dinamizado el sector '
+            'servicios en estos municipios.<br>'
+            '· <b>Grupo B</b> (marginal): +0.0186 → mayor dinamismo en municipios con conexión '
+            'reciente.</div>'
+        ),
     )
 
     top5 = seccion(
