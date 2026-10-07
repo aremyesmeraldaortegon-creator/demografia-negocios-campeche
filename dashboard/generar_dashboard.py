@@ -277,7 +277,7 @@ def tabla_niveles(df23, df24, sobre, nac, mue):
         )
     return (
         '<table class="tabla"><thead><tr>'
-        '<th>Nivel</th><th>U23</th><th>U24</th><th>Sobrevivientes</th><th>Nacimientos</th>'
+        '<th>Nivel</th><th>Unidades 2023</th><th>Unidades 2024</th><th>Sobrevivientes</th><th>Nacimientos</th>'
         '<th>Muertes</th><th>Crec. neto</th>'
         '</tr></thead><tbody>' + filas + '</tbody></table>'
     )
@@ -298,7 +298,7 @@ def tabla_html(res):
         )
     return (
         '<table class="tabla"><thead><tr>'
-        '<th>Municipio</th><th>U23</th><th>U24</th><th>Nacim.</th><th>Muertes</th>'
+        '<th>Municipio</th><th>Unidades 2023</th><th>Unidades 2024</th><th>Nacim.</th><th>Muertes</th>'
         '<th>Superv.</th><th>Natal.</th><th>Mortal.</th><th>Crec. neto</th>'
         '</tr></thead><tbody>' + filas + '</tbody></table>'
     )
@@ -321,7 +321,7 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
 
     csv_mun = res[["municipio", "U23", "U24", "Nacimientos", "Muertes",
                    "tasa_supervivencia", "tasa_natalidad", "tasa_mortalidad",
-                   "crecimiento_neto"]].to_csv(index=False)
+                   "crecimiento_neto"]].rename(columns={"U23": "Unidades_2023", "U24": "Unidades_2024"}).to_csv(index=False)
     csv_sec = pd.DataFrame({
         "nivel": NIVELES,
         "sobrevivientes": [int((sobre["sector_servicios"] == n).sum()) for n in NIVELES],
@@ -435,6 +435,7 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
 
   <h3 class="subsec">B) Comparación entre niveles</h3>
   <div class="figura">{tabla_niveles(df23, df24, sobre, nac, mue)}</div>
+  <p class="nota">Unidades = unidades económicas (negocios). Fuente: DENUE/INEGI.</p>
 
   <details class="scorp">
     <summary>¿Qué significan los códigos SCIAN y los niveles?</summary>

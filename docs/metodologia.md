@@ -100,6 +100,14 @@ El análisis se realiza en dos notebooks que leen de `data/denue.db` (con fallba
 
 ### 7.1 Métricas
 
+**Glosario de variables:**
+
+- `S` = Sobrevivientes (negocios presentes en ambas ediciones).
+- `M` = Muertes (negocios solo en 2023).
+- `N` = Nacimientos (negocios solo en 2024).
+- `U23` = Unidades económicas en 2023.
+- `U24` = Unidades económicas en 2024.
+
 | Métrica | Fórmula |
 |---|---|
 | Tasa de supervivencia | `S / U23` |

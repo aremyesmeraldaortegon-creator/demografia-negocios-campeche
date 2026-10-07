@@ -165,7 +165,9 @@ El proceso de extracción, transformación y carga se organiza en la carpeta `et
 
 Notebook: `notebooks/01_panorama_general.ipynb`
 
-Análisis agregado para todos los municipios y todos los giros. Calcula por municipio la tasa de supervivencia (`S/U23`), natalidad (`N/U24`), mortalidad (`M/U23`) y crecimiento neto (`(U24-U23)/U23`), además de la distribución por sector de servicios y por tamaño (personal ocupado).
+Análisis agregado para todos los municipios y todos los giros. Calcula por municipio la tasa de supervivencia (`S / U23`), natalidad (`N / U24`), mortalidad (`M / U23`) y crecimiento neto (`(U24 - U23) / U23`), además de la distribución por sector de servicios y por tamaño (personal ocupado).
+
+> **Nota:** `U23` = unidades económicas (negocios) en 2023; `U24` = unidades económicas en 2024.
 
 ---
 
