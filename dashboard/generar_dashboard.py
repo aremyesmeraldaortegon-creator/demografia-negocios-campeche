@@ -348,9 +348,14 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
 
     sector = seccion(
         "4", "Sector de servicios",
-        "Distribuye las unidades según su <b>nivel en el sector de servicios</b>: núcleo "
-        "(alojamiento, alimentos y agencias), ampliado, excluido y el resto de la economía. "
-        "Se muestran sobrevivientes, nacimientos y muertes de cada nivel.",
+        "Distribuye las unidades según su nivel en el sector de servicios. Los niveles son:<br>"
+        "· <b>Núcleo</b> — alojamiento (7211), alimentos y bebidas (7225) y agencias de viajes "
+        "(5615). Es el análisis principal.<br>"
+        "· <b>Ampliado</b> — bares y centros nocturnos (7224), parques recreativos (7132) y "
+        "museos (7121). Se usa como robustez.<br>"
+        "· <b>Excluido</b> — transporte turístico terrestre (4871), excluido por circularidad "
+        "(podría incluir al propio Tren Maya).<br>"
+        "· <b>Resto</b> — todos los demás giros de la economía.",
         f"El núcleo de servicios es minoritario ({nucleo_sobre:,} sobrevivientes frente a "
         f"{resto_sobre:,} del resto). Es ahí donde se esperaría ver el efecto del Tren Maya, "
         "pero su peso en el total es pequeño.",
@@ -359,13 +364,20 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
 
     indice = seccion(
         "5", "Índice de dinamismo del sector de servicios",
-        "El índice mide si el núcleo de servicios gana más peso entre los <b>nacimientos</b> "
-        "que entre las <b>muertes</b>: <code>(N_núcleo / N_total) − (M_núcleo / M_total)</code>. "
-        "Si es positivo, el sector está ganando terreno; si es negativo, lo pierde. Se calcula "
-        "por grupo de exposición al Tren Maya (A/B/C).",
+        "Mide si el núcleo de servicios gana o pierde peso en la economía, comparando su "
+        "participación en los <b>nacimientos</b> frente a las <b>muertes</b>: "
+        "<code>(N_núcleo / N_total) − (M_núcleo / M_total)</code>.<br><br>"
+        "<b>N_núcleo</b> = nacimientos del núcleo · <b>N_total</b> = nacimientos totales · "
+        "<b>M_núcleo</b> = muertes del núcleo · <b>M_total</b> = muertes totales.<br><br>"
+        "Se calcula por <b>grupo de exposición al Tren Maya</b>:<br>"
+        "· <b>Grupo A</b> — conectados y expuestos (estaciones operativas desde dic-2023): "
+        "Calkiní, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega.<br>"
+        "· <b>Grupo B</b> — conectados con exposición marginal (estaciones del Tramo 7, "
+        "abiertas hasta dic-2024): Carmen, Calakmul, Candelaria.<br>"
+        "· <b>Grupo C</b> — no conectados: Hopelchén, Palizada, Seybaplaya, Dzitbalché.",
         f"El índice global es <b>{idx_global:+.4f}</b>, pero el dinamismo positivo se concentra "
-        f"en el <b>grupo B</b> (Carmen, Calakmul, Candelaria: {idx_grupo['B']:+.4f}); los grupos "
-        f"A y C son cercanos a cero o negativos.",
+        f"en el <b>grupo B</b> ({idx_grupo['B']:+.4f}); los grupos A ({idx_grupo['A']:+.4f}) y "
+        f"C ({idx_grupo['C']:+.4f}) son cercanos a cero o negativos.",
         figs_html["indice"],
     )
 
