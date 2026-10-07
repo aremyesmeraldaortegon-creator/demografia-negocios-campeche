@@ -47,6 +47,16 @@ ORDEN_TAM = [
     "251 y más personas",
 ]
 
+ETIQUETAS_TAM = {
+    "0 a 5 personas": "0 a 5<br>personas",
+    "6 a 10 personas": "6 a 10<br>personas",
+    "11 a 30 personas": "11 a 30<br>personas",
+    "31 a 50 personas": "31 a 50<br>personas",
+    "51 a 100 personas": "51 a 100<br>personas",
+    "101 a 250 personas": "101 a 250<br>personas",
+    "251 y más personas": "251 y más<br>personas",
+}
+
 NIVELES = ["nucleo", "ampliado", "excluido", "resto"]
 
 NIVELES_ETIQUETAS = {
@@ -121,12 +131,13 @@ def fig_tamano(df23, df24):
         return pd.Series(cat).value_counts().sort_index()
 
     d = pd.DataFrame({"2023": dist(df23), "2024": dist(df24)})
+    etiquetas = [ETIQUETAS_TAM.get(x, x) for x in d.index]
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=d.index, y=d["2023"], name="2023", marker_color=AZUL))
-    fig.add_trace(go.Bar(x=d.index, y=d["2024"], name="2024", marker_color=NARANJA))
-    fig.update_layout(barmode="group", height=420, margin=dict(l=10, r=10, t=30, b=40),
+    fig.add_trace(go.Bar(x=etiquetas, y=d["2023"], name="2023", marker_color=AZUL))
+    fig.add_trace(go.Bar(x=etiquetas, y=d["2024"], name="2024", marker_color=NARANJA))
+    fig.update_layout(barmode="group", height=500, margin=dict(l=10, r=10, t=30, b=60),
                       legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0))
-    fig.update_xaxes(tickangle=30)
+    fig.update_xaxes(tickangle=0)
     return fig
 
 
@@ -213,33 +224,7 @@ def fig_donut_supervivencia(s_total, m_total):
 
 
 def fig_mapa(res, geojson):
-    centers = {}
-    for f in geojson["features"]:
-        cve = f["properties"]["cvegeo"]
-        geom = f["geometry"]
-
-        def recoger(g, coords):
-            if g["type"] == "Polygon":
-                for ring in g["coordinates"]:
-                    coords.extend(ring)
-            elif g["type"] == "MultiPolygon":
-                for poly in g["coordinates"]:
-                    for ring in poly:
-                        coords.extend(ring)
-
-        coords = []
-        recoger(geom, coords)
-        if coords:
-            centers[cve] = (sum(p[0] for p in coords) / len(coords),
-                            sum(p[1] for p in coords) / len(coords))
-
-    nombre_map = dict(zip(res["cvegeo"], res["municipio"]))
-    lons = [centers[c][0] for c in centers if c in nombre_map]
-    lats = [centers[c][1] for c in centers if c in nombre_map]
-    textos = [nombre_map[c] for c in centers if c in nombre_map]
-
-    fig = go.Figure()
-    fig.add_trace(go.Choropleth(
+    fig = go.Figure(go.Choropleth(
         geojson=geojson,
         locations=res["cvegeo"],
         z=res["crecimiento_neto"],
@@ -251,12 +236,6 @@ def fig_mapa(res, geojson):
         colorbar=dict(title="Crec. neto (%)"),
         text=res["municipio"],
         hovertemplate="%{text}: %{z:.1f}%<extra></extra>",
-    ))
-    fig.add_trace(go.Scattergeo(
-        lon=lons, lat=lats, text=textos, mode="text",
-        textfont=dict(size=10, color="#1a1a1a"),
-        hoverinfo="skip",
-        showlegend=False,
     ))
     fig.update_geos(fitbounds="locations", visible=False)
     fig.update_layout(height=520, margin=dict(l=0, r=0, t=30, b=0))
@@ -430,8 +409,7 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
         "1", "Mapa: crecimiento neto por municipio",
         "Cada municipio se colorea según su <b>crecimiento neto</b>, es decir, cuánto varió "
         "el número de unidades económicas entre nov-2023 y nov-2024 (en %). El verde indica "
-        "que el municipio ganó negocios; el rojo, que los perdió. Pasa el cursor sobre cada "
-        "municipio para ver su valor exacto.",
+        "que el municipio ganó negocios; el rojo, que los perdió.",
         f"Solo <b>Palizada</b> se contrajo ({palizada:+.1f}%). Todos los demás municipios "
         f"crecieron.",
         figs_html["mapa"],
