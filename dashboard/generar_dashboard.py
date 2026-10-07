@@ -213,7 +213,33 @@ def fig_donut_supervivencia(s_total, m_total):
 
 
 def fig_mapa(res, geojson):
-    fig = go.Figure(go.Choropleth(
+    centers = {}
+    for f in geojson["features"]:
+        cve = f["properties"]["cvegeo"]
+        geom = f["geometry"]
+
+        def recoger(g, coords):
+            if g["type"] == "Polygon":
+                for ring in g["coordinates"]:
+                    coords.extend(ring)
+            elif g["type"] == "MultiPolygon":
+                for poly in g["coordinates"]:
+                    for ring in poly:
+                        coords.extend(ring)
+
+        coords = []
+        recoger(geom, coords)
+        if coords:
+            centers[cve] = (sum(p[0] for p in coords) / len(coords),
+                            sum(p[1] for p in coords) / len(coords))
+
+    nombre_map = dict(zip(res["cvegeo"], res["municipio"]))
+    lons = [centers[c][0] for c in centers if c in nombre_map]
+    lats = [centers[c][1] for c in centers if c in nombre_map]
+    textos = [nombre_map[c] for c in centers if c in nombre_map]
+
+    fig = go.Figure()
+    fig.add_trace(go.Choropleth(
         geojson=geojson,
         locations=res["cvegeo"],
         z=res["crecimiento_neto"],
@@ -226,8 +252,14 @@ def fig_mapa(res, geojson):
         text=res["municipio"],
         hovertemplate="%{text}: %{z:.1f}%<extra></extra>",
     ))
+    fig.add_trace(go.Scattergeo(
+        lon=lons, lat=lats, text=textos, mode="text",
+        textfont=dict(size=10, color="#1a1a1a"),
+        hoverinfo="skip",
+        showlegend=False,
+    ))
     fig.update_geos(fitbounds="locations", visible=False)
-    fig.update_layout(height=560, margin=dict(l=0, r=0, t=30, b=0))
+    fig.update_layout(height=520, margin=dict(l=0, r=0, t=30, b=0))
     return fig
 
 
