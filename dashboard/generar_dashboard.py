@@ -205,10 +205,10 @@ def fig_donut_supervivencia(s_total, m_total):
     fig = go.Figure(go.Pie(labels=["Sobrevivieron", "Murieron"],
                            values=[s_total, m_total], hole=0.5,
                            marker=dict(colors=[VERDE, ROJO]),
-                           textinfo="label+percent", textfont=dict(size=14)))
-    fig.update_layout(height=380, margin=dict(l=10, r=10, t=40, b=10),
-                      legend=dict(orientation="h"),
-                      title="Destino de los negocios de 2023")
+                           textinfo="percent", textfont=dict(size=13)))
+    fig.update_layout(height=250, margin=dict(l=10, r=10, t=10, b=10),
+                      legend=dict(orientation="h", yanchor="bottom", y=-0.05),
+                      showlegend=True)
     return fig
 
 
@@ -373,6 +373,10 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
     .lectura { background:#eef4fb; border-left:4px solid #1f77b4; color:#2c3e50;
                padding:12px 16px; border-radius:8px; margin-top:14px; font-size:.95rem; }
     .conclusion { background:#fff7e6; border:1px solid #ffd58a; }
+    .concl-grid { display:flex; flex-wrap:wrap; gap:20px; align-items:center; }
+    .concl-texto { flex:2 1 400px; min-width:300px; }
+    .concl-figura { flex:1 1 300px; min-width:260px; }
+    .donut-caption { margin-top:6px; font-size:.92rem; color:#3e4c59; }
     .figura { margin-top:14px; }
     .fig-dos { display:flex; flex-wrap:wrap; gap:16px; }
     .fig-dos > div { flex:1 1 400px; min-width:340px; }
@@ -532,13 +536,25 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
 
 <section class="tarjeta conclusion">
   <div class="sec-cab"><span class="sec-num">★</span><h2>Conclusión: más reemplazo que desarrollo</h2></div>
-  <div class="que-es">El <b>+12.3% de crecimiento NO equivale a desarrollo</b>: solo 7 de cada
-  10 negocios de 2023 sobrevivieron. El crecimiento se explica por nacimientos que reemplazan
-  a los que murieron, no por el fortalecimiento del tejido existente. El 85.7% son
-  microempresas, y el Tren Maya (grupo A) muestra un índice de dinamismo negativo. La economía
-  campechana se <b>reemplaza más de lo que se desarrolla</b>, lo que da sentido a la paradoja
-  del PIB: la renta petrolera no se traduce en un tejido empresarial robusto y acumulativo.</div>
-  <div class="figura">{figs_html["donut_supervivencia"]}</div>
+  <div class="concl-grid">
+    <div class="concl-texto">
+      <div class="que-es">El <b>+12.3% de crecimiento NO equivale a desarrollo</b>: solo 7 de cada
+      10 negocios de 2023 sobrevivieron. El crecimiento se explica por nacimientos que reemplazan
+      a los que murieron, no por el fortalecimiento del tejido existente. El 85.7% son
+      microempresas, y el Tren Maya (grupo A) muestra un índice de dinamismo negativo. La economía
+      campechana se <b>reemplaza más de lo que se desarrolla</b>, lo que da sentido a la paradoja
+      del PIB: la renta petrolera no se traduce en un tejido empresarial robusto y acumulativo.
+      <br><span class="nota">Limitaciones: ventana de 1 año; parte del crecimiento puede deberse
+      a mayor cobertura censal 2024.</span></div>
+    </div>
+    <div class="concl-figura">
+      <div class="figura">{figs_html["donut_supervivencia"]}</div>
+      <div class="donut-caption">
+        <span style="color:{VERDE};">Sobrevivieron: {s_total:,} ({sup}%)</span> ·
+        <span style="color:{ROJO};">Murieron: {m_total:,} ({mor}%)</span>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="tarjeta">
