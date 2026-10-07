@@ -32,6 +32,7 @@ VERDE = "#2ca02c"
 ROJO = "#d62728"
 GRIS = "#7f7f7f"
 AZUL_OSCURO = "#14395e"
+AMBAR = "#b45309"
 
 MUNICIPIOS = {
     "001": "Calkiní", "002": "Campeche", "003": "Carmen", "004": "Champotón",
@@ -400,7 +401,7 @@ def construir_html(figs_html, res, sobre, nac, mue, idx_global, idx_grupo):
   {kpi("Nacimientos", f"{n_total:,}", AZUL)}
   {kpi("Muertes", f"{m_total:,}", ROJO)}
   {kpi("Crecimiento neto", f"{crecimiento:+.1f}%", VERDE if crecimiento >= 0 else ROJO)}
-  {kpi("Tasa de supervivencia", f"{sup}%", NARANJA, "solo 7 de cada 10 negocios sobrevivieron")}
+  {kpi("Tasa de supervivencia", f"{sup}%", AMBAR, "solo 7 de cada 10 negocios sobrevivieron")}
   {kpi("Tasa de mortalidad", f"{mor}%", ROJO, "3 de cada 10 negocios murieron")}
 </div>
 
