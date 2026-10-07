@@ -1,8 +1,16 @@
 # Demografía de negocios en Campeche: la paradoja del PIB y el tejido empresarial
 
-## 🌐 Dashboard interactivo
+## 📊 Análisis interactivo
 
-👉 **[Ver dashboard en vivo](https://aremyesmeraldaortegon-creator.github.io/demografia-negocios-campeche/)**
+<p align="center">
+  <a href="https://aremyesmeraldaortegon-creator.github.io/demografia-negocios-campeche/">
+    <img src="https://img.shields.io/badge/🚀_ABRIR_ANÁLISIS_INTERACTIVO-Click_aquí-0066CC?style=for-the-badge&logo=plotly&logoColor=white" alt="Abrir análisis interactivo">
+  </a>
+</p>
+
+<p align="center">
+  <em>🗺️ Mapa interactivo · 📊 KPIs · 📈 Gráficas dinámicas</em>
+</p>
 
 Análisis de nacimientos, muertes y sobrevivencia de negocios en los 13 municipios de Campeche a partir del DENUE (nov-2023 vs. nov-2024), para explorar por qué un PIB per cápita alto no se refleja en el dinamismo de la economía local. La apertura del Tren Maya (dic-2023) se usa como experimento natural, no como foco principal.
 
