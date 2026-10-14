@@ -129,7 +129,7 @@ El análisis se realiza en notebooks que leen de `data/denue.db` (con fallback a
 - Crecimiento neto positivo y generalizado (+12.3%), con natalidad superior a mortalidad en 12 de los 13 municipios.
 - Mayor crecimiento neto en municipios pequeños: Calakmul (+28.4%), Hopelchén (+26.0%) y Carmen (+21.2%).
 - Palizada es el único municipio en contracción.
-- El 85.7% de las unidades son microempresas (0-5 personas), coherente con la paradoja del PIB campechano.
+- El 85.8% de las unidades son microempresas (0-5 personas), coherente con la paradoja del PIB campechano.
 - El índice de dinamismo del sector de servicios es +0.0127 a nivel global y se concentra en el grupo B (+0.0186).
 - **Alta rotación empresarial:** solo el 69.4% de los negocios de 2023 sobrevivió a 2024 (28,984 de 41,783) y el 30.6% murió (12,799). El crecimiento neto se explica por nacimientos, no por fortalecimiento del tejido existente.
 
@@ -137,7 +137,7 @@ El análisis se realiza en notebooks que leen de `data/denue.db` (con fallback a
 
 ### 7.3 Limitaciones e interpretación crítica
 
-**Crecimiento bruto vs. desarrollo sostenido.** El crecimiento neto (+12.3%) no equivale a desarrollo empresarial. Un +12.3% es compatible con un tejido que se *reemplaza*: se abren muchos negocios y se cierran casi tantos. La evidencia de esto es que solo el 69.4% de las unidades de 2023 sobrevivió a 2024 y que el crecimiento neto se debe a 17,939 nacimientos, no a la expansión de los negocios existentes. Un indicador de desarrollo debería mostrar sobrevivencia alta y escalamiento (más unidades grandes); aquí se observa lo contrario: sobrevivencia del 69.4% y un tejido dominado por microempresas (85.7% con 0-5 personas).
+**Crecimiento bruto vs. desarrollo sostenido.** El crecimiento neto (+12.3%) no equivale a desarrollo empresarial. Un +12.3% es compatible con un tejido que se *reemplaza*: se abren muchos negocios y se cierran casi tantos. La evidencia de esto es que solo el 69.4% de las unidades de 2023 sobrevivió a 2024 y que el crecimiento neto se debe a 17,939 nacimientos, no a la expansión de los negocios existentes. Un indicador de desarrollo debería mostrar sobrevivencia alta y escalamiento (más unidades grandes); aquí se observa lo contrario: sobrevivencia del 69.4% y un tejido dominado por microempresas (85.8% con 0-5 personas).
 
 **Posible artefacto de cobertura censal.** La edición nov-2024 está ligada a los Censos Económicos 2024, una actualización *exhaustiva* (no incremental) que tiende a capturar más unidades que una edición intermedia. Parte del crecimiento observado —y parte de los "nacimientos"— puede reflejar mejor cobertura más que creación real de negocios. Esto es especialmente relevante en Carmen (grupo B), que muestra la mayor tasa de entrada.
 
@@ -162,7 +162,7 @@ La edición 11/2024 proviene de los Censos Económicos (actualización *exhausti
 | 2023→2024 | 12m | regular→exhaustiva | nacimientos inflados (mejor cobertura) |
 | 2024→2025 | 6m | exhaustiva→regular | muertes infladas + ventana corta |
 
-La **tasa de supervivencia** lo confirma: 99.1% (2022→2023), **69.4%** (2023→2024) y 97.5% (2024→2025). La caída a 69.4% es la re-codificación masiva de CLEEs del censo, no un colapso real.
+La **tasa de supervivencia** lo confirma: 99.0% (2022→2023), **69.4%** (2023→2024) y 97.5% (2024→2025). La caída a 69.4% es la re-codificación masiva de CLEEs del censo, no un colapso real.
 
 ### 8.3 Ventanas temporales desiguales
 
@@ -173,3 +173,25 @@ Las transiciones no miden lo mismo: 12 meses (2022→2023), 12 meses (2023→202
 - 66,991 CLEEs únicos; **35.9% presentes en las 4 ediciones**.
 - Cohorte 2022 (41,638) → **62.2% sobrevive a 2025**.
 - El artefacto censal 2024 explica la mayor parte de la rotación anormal observada en la transición 2023→2024.
+
+### 8.5 Fórmulas, tablas de origen y métodos de cálculo
+
+**Proporción de microempresas (Hallazgo 1).**
+
+- Tablas: `denue_2022_11`, `denue_2023_11`, `denue_2024_11`, `denue_2025_05`; campo `per_ocu`.
+- Fórmula: `microempresas_ed = Σ(per_ocu == "0 a 5 personas") / Σ(todas las unidades) × 100`.
+
+**Tasa de supervivencia por transición (Hallazgo 2).**
+
+- Tablas: `t_YYYY_MM__YYYY_MM_sobrevivientes` y `denue_YYYY_MM` (edición base).
+- Fórmula: `S / U_base × 100`, donde `S` = filas de sobrevivientes y `U_base` = unidades de la edición de partida.
+
+**Supervivencia de cohortes (Hallazgo 3).**
+
+- Tabla: `cohortes` (un registro por `clee`, con `en_YYYY_MM` ∈ {0,1} y `cohorte` = primera edición).
+- Fórmula: `supervivencia_cohorte_X = Σ(en_2025_05 == 1 | cohorte == X) / Σ(cohorte == X) × 100`.
+
+**Índice de dinamismo por grupo (Hallazgo 4).**
+
+- Tablas: `t_YYYY_MM__YYYY_MM_nacimientos` y `t_YYYY_MM__YYYY_MM_muertes`; filtros por `sector_servicios == "nucleo"` y `grupo_tren`.
+- Fórmula: `(N_núcleo / N_total) − (M_núcleo / M_total)`, calculada por transición y por grupo.

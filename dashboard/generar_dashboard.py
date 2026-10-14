@@ -451,7 +451,7 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
         "Muestra cuántas unidades económicas hay en cada rango de <b>personal ocupado</b>, en "
         "2023 (azul) y 2024 (naranja). Permite ver si la economía local está compuesta por "
         "negocios grandes o pequeños.",
-        "El <b>85.7%</b> de las unidades tiene entre 0 y 5 personas: la economía campechana es "
+        "El <b>85.8%</b> de las unidades tiene entre 0 y 5 personas: la economía campechana es "
         "abrumadoramente microempresarial, lo que explica la paradoja del PIB (renta petrolera "
         "sin derrame en el tejido de base).",
         figs_html["tamano"],
@@ -506,7 +506,7 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
             '<div class="lectura"><strong>¿Cómo leer esto?</strong><br>'
             '· Valor <b>positivo</b> → el núcleo de servicios gana peso en la economía.<br>'
             '· Valor <b>negativo</b> → el núcleo pierde peso.<br>'
-            '· <b>Grupo A</b> (expuestos): −0.0050 → el Tren Maya no ha dinamizado el sector '
+            '· <b>Grupo A</b> (expuestos): −0.0045 → el Tren Maya no ha dinamizado el sector '
             'servicios en estos municipios.<br>'
             '· <b>Grupo B</b> (marginal): +0.0186 → mayor dinamismo en municipios con conexión '
             'reciente.</div>'
@@ -576,7 +576,7 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
     <div class="concl-texto">
       <div class="que-es">El <b>+12.3% de crecimiento NO equivale a desarrollo</b>: solo 7 de cada
       10 negocios de 2023 sobrevivieron. El crecimiento se explica por nacimientos que reemplazan
-      a los que murieron, no por el fortalecimiento del tejido existente. El 85.7% son
+      a los que murieron, no por el fortalecimiento del tejido existente. El 85.8% son
       microempresas, y el Tren Maya (grupo A) muestra un índice de dinamismo negativo. La economía
       campechana se <b>reemplaza más de lo que se desarrolla</b>, lo que da sentido a la paradoja
       del PIB: la renta petrolera no se traduce en un tejido empresarial robusto y acumulativo.

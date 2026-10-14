@@ -367,6 +367,20 @@ def construir_html(figs, vals_supervivencia, pts_cohorte, df_indice, df_tam, pro
 </section>
 
 <section>
+  <h2>Notas metodológicas</h2>
+  <div class="que-es">
+    Todas las gráficas se generan desde <b>data/denue.db</b> (SQLite). Fuente de cada sección:<br>
+    · <b>Total de unidades</b> → conteo de filas en <code>denue_2022_11 … denue_2025_05</code>.<br>
+    · <b>Supervivencia / entrada / salida</b> → tablas <code>t_*_sobrevivientes / _nacimientos / _muertes</code> sobre la edición base.<br>
+    · <b>Índice de dinamismo</b> → <code>(N_núcleo / N_total) − (M_núcleo / M_total)</code>, filtrado por <code>sector_servicios</code> y <code>grupo_tren</code>.<br>
+    · <b>Tamaño</b> → campo <code>per_ocu</code> de cada <code>denue_YYYY_MM</code>.<br>
+    · <b>Cohortes</b> → tabla <code>cohortes</code> (CLEEs presentes por edición).<br>
+    · <b>Mapa</b> → unidades por <code>cve_mun</code> (con la fusión Calkiní-Dzitbalché).<br>
+    El detalle completo está en <b>docs/metodologia.md</b>.
+  </div>
+</section>
+
+<section>
   <h2>Glosario de claves y abreviaturas</h2>
   <details open>
     <summary>¿Qué significan estos términos?</summary>

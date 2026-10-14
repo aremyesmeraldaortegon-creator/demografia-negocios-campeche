@@ -195,8 +195,8 @@ La respuesta matizada es: **no necesariamente**. El crecimiento de +12.3% en el 
 
 - Solo el **69.4%** de los negocios de 2023 sobrevivió a 2024 (28,984 de 41,783); el **30.6%** murió (12,799 negocios).
 - El crecimiento neto (+5,140 unidades) se explica por **17,939 nacimientos**, no por el fortalecimiento de los negocios existentes.
-- El **85.7%** de las unidades son microempresas (0-5 personas): el tejido productivo no se diversifica ni escala.
-- El **índice de dinamismo del grupo A** (municipios con Tren Maya operativo) es **negativo (−0.0050)**, lo que sugiere que el Tren Maya no ha dinamizado los negocios existentes.
+- El **85.8%** de las unidades son microempresas (0-5 personas): el tejido productivo no se diversifica ni escala.
+- El **índice de dinamismo del grupo A** (municipios con Tren Maya operativo) es **negativo (−0.0045)**, lo que sugiere que el Tren Maya no ha dinamizado los negocios existentes.
 
 ### 6.2 Conclusión clave: hay más "reemplazo" que "desarrollo"
 
@@ -209,6 +209,40 @@ El crecimiento neto positivo coexiste con una alta mortalidad y una base microem
 - **El sector de servicios es minoritario y su dinamismo se concentra en el grupo B:** el índice de dinamismo del sector de servicios es +0.0127 a nivel global, positivo sobre todo en Carmen, Calakmul y Candelaria (grupo B).
 
 > **Nota de interpretación:** parte del crecimiento observado puede reflejar la mejor cobertura de los Censos Económicos 2024, no solo nueva actividad económica. Los datos no permiten distinguir con certeza entre reemplazo puro, renovación positiva o artefacto censal.
+
+### 6.4 Hallazgos de la expansión multianual (2022–2025)
+
+#### Hallazgo 1: Estabilidad estructural del tejido microempresarial
+
+- **(a) Qué:** la proporción de microempresas (0-5 personas) se mantiene estable en ~85% durante los 4 años: **84.5%** (2022), **84.4%** (2023), **85.8%** (2024), **85.8%** (2025).
+- **(b) De dónde:** tablas `denue_2022_11`, `denue_2023_11`, `denue_2024_11`, `denue_2025_05` en `data/denue.db`. Campo `per_ocu` (personal ocupado).
+- **(c) Cómo:** para cada edición, se cuentan las unidades por rango de `per_ocu` y se divide el rango 0-5 personas entre el total × 100.
+- **(d) Por qué:** refuerza la paradoja del PIB campechano. Ni siquiera con la apertura del Tren Maya (dic-2023) el tejido empresarial escala a empresas medianas o grandes; la economía local sigue atrapada en microescala.
+- **(e) Limitaciones:** la categoría "0-5 personas" agrupa micronegocios muy heterogéneos (desde puestos informales hasta pequeñas empresas formales). No distingue entre ambos.
+
+#### Hallazgo 2: Artefacto censal de 2024 (transición anómala)
+
+- **(a) Qué:** la tasa de supervivencia cae a **69.4%** en 2023→2024, mientras que en 2022→2023 es **99.0%** y en 2024→2025 es **97.5%**.
+- **(b) De dónde:** tablas `t_2022_11__2023_11`, `t_2023_11__2024_11`, `t_2024_11__2025_05` en `data/denue.db`.
+- **(c) Cómo:** `S / U_base × 100` para cada transición.
+- **(d) Por qué:** la edición nov-2024 proviene de los Censos Económicos 2024 (actualización *exhaustiva*), que re-codifica masivamente las CLEEs. Esto genera falsos "nacimientos + muertes" que el matching híbrido solo rescata parcialmente. **No** es un colapso real de negocios.
+- **(e) Limitaciones:** los datos no permiten distinguir con certeza entre (i) cierre real de negocios, (ii) re-codificación administrativa y (iii) mejor cobertura censal.
+
+#### Hallazgo 3: Cohortes con supervivencia desigual
+
+- **(a) Qué:** la cohorte 2022 sobrevive **62.2%** a 2025 (2.5 años); la cohorte 2023 solo **35.4%** a 2025 (1.5 años); la cohorte 2024 sobrevive **90.2%** a 2025 (6 meses).
+- **(b) De dónde:** tabla `cohortes` en `data/denue.db` (construida con las CLEEs presentes en cada edición).
+- **(c) Cómo:** para cada CLEE nacido en el año X, se verifica si aparece en cada edición posterior; se calcula el % de supervivientes sobre el total de la cohorte.
+- **(d) Por qué:** la cohorte 2023 tiene supervivencia *anormalmente baja* porque nació justo antes del Censo Económico 2024. Al re-codificar las CLEEs, muchos aparecen como "muertos" en 2024 aunque sigan operando. La cohorte 2024 (post-censo) no sufre este efecto.
+- **(e) Limitaciones:** las cohortes 2023 y 2024 tienen ventanas temporales muy distintas (1.5 años vs 6 meses). Compararlas directamente no es justo.
+
+#### Hallazgo 4: Efecto ambiguo del Tren Maya en el sector servicios
+
+- **(a) Qué:** el índice de dinamismo del sector de servicios en el grupo A (Tren Maya operativo) es **−0.0045** en 2023→2024, pero **+0.0053** en 2024→2025. El grupo B invierte el patrón: **+0.0186 → −0.0192**.
+- **(b) De dónde:** cálculo a partir de las tablas de nacimientos y muertes, filtradas por `sector_servicios` y `grupo_tren`.
+- **(c) Cómo:** `(N_núcleo / N_total) − (M_núcleo / M_total)` para cada transición y grupo.
+- **(d) Por qué:** sugiere que el efecto del Tren Maya puede ser transitorio o que los municipios se afectan en momentos distintos. El grupo A muestra una recuperación tardía en 2025.
+- **(e) Limitaciones críticas:** la transición 2024→2025 es de solo 6 meses (no 12) y es post-censal, por lo que las "muertes" están infladas por el artefacto. Interpretar con mucha cautela.
 
 ---
 
@@ -226,7 +260,7 @@ El análisis se amplió de 2 a **4 ediciones** del DENUE para estudiar tendencia
 | 05/2025 | regular |
 
 - **Tres transiciones consecutivas** (2022→2023, 2023→2024, 2024→2025) con ventanas reales de **12m, 12m y 6m** (la última por usar la edición de mayo 2025).
-- **Artefacto censal 2024:** la transición 2023→2024 muestra una supervivencia anormal de **69.4%** (vs 99.1% en 2022→2023 y 97.5% en 2024→2025), producto de la re-codificación masiva de CLEEs del censo, no de un colapso real.
+- **Artefacto censal 2024:** la transición 2023→2024 muestra una supervivencia anormal de **69.4%** (vs 99.0% en 2022→2023 y 97.5% en 2024→2025), producto de la re-codificación masiva de CLEEs del censo, no de un colapso real.
 - **Cohortes:** 66,991 CLEEs únicos; 35.9% presentes en las 4 ediciones; la cohorte 2022 sobrevive **62.2%** a 2025.
 - **Fusión Calkiní-Dzitbalché:** la edición 2022 no separa Dzitbalché; se fusiona con Calkiní para mantener la serie consistente.
 
