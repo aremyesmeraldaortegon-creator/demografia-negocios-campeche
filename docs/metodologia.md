@@ -59,9 +59,11 @@ El resto de los códigos se etiquetan como `resto`.
 
 | Grupo | Municipios | Justificación |
 |---|---|---|
-| A. Conectados y expuestos | Calkiní, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega | Estaciones operativas desde dic-2023 |
+| A. Conectados y expuestos | Calkiní-Dzitbalché, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega | Estaciones operativas desde dic-2023 |
 | B. Conectados, exposición marginal | Carmen, Calakmul, Candelaria | Estaciones del Tramo 7, abiertas hasta dic-2024 |
-| C. No conectados | Hopelchén, Palizada, Seybaplaya, Dzitbalché | Sin estación |
+| C. No conectados | Hopelchén, Palizada, Seybaplaya | Sin estación |
+
+> **Fusión Calkiní-Dzitbalché:** la edición 11/2022 no codifica a Dzitbalché (013) como municipio separado; sus negocios aparecen bajo Calkiní (001). Para mantener una serie municipal consistente entre ediciones, Dzitbalché se fusiona con Calkiní en una sola unidad "Calkiní-Dzitbalché" (`cve_mun 013 → 001`) en todas las ediciones.
 
 ## 5. Persistencia
 

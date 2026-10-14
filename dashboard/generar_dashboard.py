@@ -35,10 +35,10 @@ AZUL_OSCURO = "#14395e"
 AMBAR = "#b45309"
 
 MUNICIPIOS = {
-    "001": "Calkiní", "002": "Campeche", "003": "Carmen", "004": "Champotón",
+    "001": "Calkiní-Dzitbalché", "002": "Campeche", "003": "Carmen", "004": "Champotón",
     "005": "Hecelchakán", "006": "Hopelchén", "007": "Palizada", "008": "Tenabo",
     "009": "Escárcega", "010": "Calakmul", "011": "Candelaria",
-    "012": "Seybaplaya", "013": "Dzitbalché",
+    "012": "Seybaplaya",
 }
 
 ORDEN_TAM = [
@@ -224,17 +224,35 @@ def fig_donut_supervivencia(s_total, m_total):
 
 
 def fig_mapa(res, geojson):
+    # La fusion Calkini-Dzitbalche: el geojson aun tiene el poligono 04013
+    # (Dzitbalche). Le asignamos el mismo valor que 04001 (Calkini-Dzitbalche).
+    valores = dict(zip(res["cvegeo"], res["crecimiento_neto"]))
+    nombres = dict(zip(res["cvegeo"], res["municipio"]))
+    if "04001" in valores:
+        valores.setdefault("04013", valores["04001"])
+        nombres.setdefault("04013", nombres["04001"])
+
+    locations = []
+    z = []
+    text = []
+    for f in geojson["features"]:
+        cve = f["properties"]["cvegeo"]
+        if cve in valores:
+            locations.append(cve)
+            z.append(valores[cve])
+            text.append(nombres[cve])
+
     fig = go.Figure(go.Choropleth(
         geojson=geojson,
-        locations=res["cvegeo"],
-        z=res["crecimiento_neto"],
+        locations=locations,
+        z=z,
         featureidkey="properties.cvegeo",
         colorscale="RdYlGn",
         zmid=0,
         marker_line_width=0.7,
         marker_line_color="white",
         colorbar=dict(title="Crec. neto (%)"),
-        text=res["municipio"],
+        text=text,
         hovertemplate="%{text}: %{z:.1f}%<extra></extra>",
     ))
     fig.update_geos(fitbounds="locations", visible=False)
@@ -475,10 +493,10 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
         "<b>M_núcleo</b> = muertes del núcleo · <b>M_total</b> = muertes totales.<br><br>"
         "Se calcula por <b>grupo de exposición al Tren Maya</b>:<br>"
         "· <b>Grupo A</b> — conectados y expuestos (estaciones operativas desde dic-2023): "
-        "Calkiní, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega.<br>"
+        "Calkiní-Dzitbalché, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega.<br>"
         "· <b>Grupo B</b> — conectados con exposición marginal (estaciones del Tramo 7, "
         "abiertas hasta dic-2024): Carmen, Calakmul, Candelaria.<br>"
-        "· <b>Grupo C</b> — no conectados: Hopelchén, Palizada, Seybaplaya, Dzitbalché.",
+        "· <b>Grupo C</b> — no conectados: Hopelchén, Palizada, Seybaplaya.",
         f"El índice global es <b>{idx_global:+.4f}</b>, pero el dinamismo positivo se concentra "
         f"en el <b>grupo B</b> ({idx_grupo['B']:+.4f}); los grupos A ({idx_grupo['A']:+.4f}) y "
         f"C ({idx_grupo['C']:+.4f}) son cercanos a cero o negativos.",
@@ -493,12 +511,16 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
         ),
     )
 
+    top3 = res.sort_values("crecimiento_neto", ascending=False).head(3)
+    top3_txt = ", ".join(
+        f"<b>{row['municipio']} ({row['crecimiento_neto']:+.1f}%)</b>"
+        for _, row in top3.iterrows()
+    )
     top5 = seccion(
         "6", "Top 5 municipios por crecimiento neto",
         "Los cinco municipios con mayor crecimiento neto, con su valor exacto sobre cada barra.",
-        "<b>Calakmul (+29.1%)</b>, <b>Dzitbalché (+28.3%)</b> y <b>Hopelchén (+25.7%)</b> "
-        "lideran. Son municipios pequeños, donde cada nueva unidad tiene un impacto porcentual "
-        "grande.",
+        f"{top3_txt} lideran. Son municipios pequeños, donde cada nueva unidad tiene un impacto "
+        "porcentual grande.",
         figs_html["top5"],
     )
 

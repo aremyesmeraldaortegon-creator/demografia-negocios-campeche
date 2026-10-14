@@ -1,19 +1,16 @@
 """
 02_matching_demografia.py
 
-Construye el panel de demografia de negocios de Campeche.
+Construye el panel de demografia de negocios de Campeche para multiples
+ediciones (2022-2025) con matching consecutivo y analisis de cohortes.
 
-- Lee data/raw/campeche_2023.csv y campeche_2024.csv
+- Lee data/raw/campeche_YYYY_MM.csv
 - Normaliza fechas y claves textuales (nombre y ubicacion)
-- Clasifica el sector de servicios en 3 niveles (nucleo / ampliado / excluido)
-- Clasifica la exposicion al Tren Maya (grupos A / B / C)
-- Aplica el matching hibrido:
-    1. Coincidencia por CLEE -> sobreviviente
-    2. Si no hay match: regla de 3 variables (nombre, SCIAN, ubicacion).
-       Si difieren <=1 -> sobreviviente; >=2 -> muerte + nacimiento
-    3. Guarda fecha_alta normalizada como validacion auxiliar
+- Fusiona Calkini + Dzitbalche (cve_mun 013 -> 001)
+- Clasifica el sector de servicios (3 niveles) y el grupo Tren Maya (A/B/C)
+- Empareja ediciones consecutivas con el esquema hibrido
+- Construye la tabla de cohortes (presencia por edicion)
 - Guarda todo en data/denue.db (SQLite)
-- Reporta totales y tasas por municipio, sector y grupo Tren Maya
 """
 
 import re
@@ -31,29 +28,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_RAW = BASE_DIR / "data" / "raw"
 DB_PATH = BASE_DIR / "data" / "denue.db"
 
-ANIOS = [2023, 2024]
+# Ediciones en orden cronologico
+EDICIONES = ["2022_11", "2023_11", "2024_11", "2025_05"]
+
+# Fusion municipal: Dzitbalche (013) se funde con Calkini (001)
+FUSION_MUN = {"013": "001"}
 
 MUNICIPIOS_CAMPECHE = {
-    "001": "Calkini",
+    "001": "Calkiní-Dzitbalché",
     "002": "Campeche",
     "003": "Carmen",
-    "004": "Champoton",
-    "005": "Hecelchakan",
-    "006": "Hopelchen",
+    "004": "Champotón",
+    "005": "Hecelchakán",
+    "006": "Hopelchén",
     "007": "Palizada",
     "008": "Tenabo",
-    "009": "Escarcega",
+    "009": "Escárcega",
     "010": "Calakmul",
     "011": "Candelaria",
     "012": "Seybaplaya",
-    "013": "Dzitbalche",
 }
 
-# Grupos de exposicion al Tren Maya (ver seccion 1.3 del README)
+# Grupos de exposicion al Tren Maya (Dzitbalche quedo absorbido en Calkini)
 GRUPO_TREN_MAYA = {
     "A": ["001", "002", "004", "005", "008", "009"],
     "B": ["003", "010", "011"],
-    "C": ["006", "007", "012", "013"],
+    "C": ["006", "007", "012"],
 }
 
 # Clasificacion del sector de servicios por primeros 4 digitos del SCIAN
@@ -74,8 +74,6 @@ COLUMNAS_UBICACION = [
     "cod_postal",
 ]
 
-# Marcadores que vuelven a un nombre no informativo para el matching.
-# Se excluyen del matching por nombre (pero no del matching por ubicacion).
 GENERIC_MARKERS = [
     "sin nombre",
     "sin denominacion",
@@ -133,6 +131,10 @@ def clasificar_grupo_tren(cve_mun):
 
 def preparar(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    # Fusion municipal: Dzitbalche -> Calkini (antes de cualquier clave/ubicacion)
+    df["cve_mun"] = df["cve_mun"].map(lambda m: FUSION_MUN.get(m, m))
+    df["municipio"] = df["cve_mun"].map(MUNICIPIOS_CAMPECHE)
+
     df["scian4"] = df["codigo_act"].str[:4]
     df["nombre_norm"] = df["nom_estab"].map(normalizar_texto)
     df["nombre_act_norm"] = df["nombre_act"].map(normalizar_texto)
@@ -158,123 +160,158 @@ def preparar(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================
 # Matching hibrido
 # ============================================================
-def match_fuzzy(u24: pd.DataFrame, u23: pd.DataFrame):
-    """Devuelve pares (posicion_24, posicion_23) con regla de 3 variables."""
-    a = u24[["clee", "scian4", "nombre_norm", "nombre_valido", "ubicacion_norm"]].reset_index(drop=True)
-    b = u23[["clee", "scian4", "nombre_norm", "nombre_valido", "ubicacion_norm"]].reset_index(drop=True)
+def match_fuzzy(u_sig: pd.DataFrame, u_base: pd.DataFrame):
+    """Devuelve pares (posicion_sig, posicion_base) con la regla de 3 variables."""
+    a = u_sig[["clee", "scian4", "nombre_norm", "nombre_valido", "ubicacion_norm"]].reset_index(drop=True)
+    b = u_base[["clee", "scian4", "nombre_norm", "nombre_valido", "ubicacion_norm"]].reset_index(drop=True)
 
     a_nom = a[a["nombre_valido"]]
     b_nom = b[b["nombre_valido"]]
     a_ubic = a[a["ubicacion_norm"] != ""]
     b_ubic = b[b["ubicacion_norm"] != ""]
 
-    cn = a_nom[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(
-        columns={"index": "i24"}
-    )
-    bn = b_nom[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(
-        columns={"index": "i23"}
-    )
-    cn = cn.merge(bn, on=["scian4", "nombre_norm"], suffixes=("_24", "_23"))
+    cn = a_nom[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(columns={"index": "i_sig"})
+    bn = b_nom[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(columns={"index": "i_base"})
+    cn = cn.merge(bn, on=["scian4", "nombre_norm"], suffixes=("_sig", "_base"))
     cn["nombre_eq"] = 1
-    cn["ubic_eq"] = (cn["ubicacion_norm_24"] == cn["ubicacion_norm_23"]).astype(int)
+    cn["ubic_eq"] = (cn["ubicacion_norm_sig"] == cn["ubicacion_norm_base"]).astype(int)
 
-    cu = a_ubic[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(
-        columns={"index": "i24"}
-    )
-    bu = b_ubic[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(
-        columns={"index": "i23"}
-    )
-    cu = cu.merge(bu, on=["scian4", "ubicacion_norm"], suffixes=("_24", "_23"))
+    cu = a_ubic[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(columns={"index": "i_sig"})
+    bu = b_ubic[["scian4", "nombre_norm", "ubicacion_norm"]].reset_index().rename(columns={"index": "i_base"})
+    cu = cu.merge(bu, on=["scian4", "ubicacion_norm"], suffixes=("_sig", "_base"))
     cu["ubic_eq"] = 1
-    cu["nombre_eq"] = (cu["nombre_norm_24"] == cu["nombre_norm_23"]).astype(int)
+    cu["nombre_eq"] = (cu["nombre_norm_sig"] == cu["nombre_norm_base"]).astype(int)
 
     cands = pd.concat(
-        [cn[["i24", "i23", "nombre_eq", "ubic_eq"]],
-         cu[["i24", "i23", "nombre_eq", "ubic_eq"]]],
+        [cn[["i_sig", "i_base", "nombre_eq", "ubic_eq"]],
+         cu[["i_sig", "i_base", "nombre_eq", "ubic_eq"]]],
         ignore_index=True,
     )
-    cands = cands.drop_duplicates(subset=["i24", "i23"])
+    cands = cands.drop_duplicates(subset=["i_sig", "i_base"])
     cands["score"] = cands["nombre_eq"] + cands["ubic_eq"]
-    cands = cands.sort_values(["score", "i24", "i23"], ascending=[False, True, True])
+    cands = cands.sort_values(["score", "i_sig", "i_base"], ascending=[False, True, True])
 
-    usados_24 = set()
-    usados_23 = set()
+    usados_sig = set()
+    usados_base = set()
     pares = []
     for fila in cands.itertuples(index=False):
-        if fila.i24 in usados_24 or fila.i23 in usados_23:
+        if fila.i_sig in usados_sig or fila.i_base in usados_base:
             continue
-        usados_24.add(fila.i24)
-        usados_23.add(fila.i23)
-        pares.append((fila.i24, fila.i23))
+        usados_sig.add(fila.i_sig)
+        usados_base.add(fila.i_base)
+        pares.append((fila.i_sig, fila.i_base))
     return pares
 
 
+def emparejar(df_base: pd.DataFrame, df_sig: pd.DataFrame):
+    """Empareja dos ediciones consecutivas con el esquema hibrido."""
+    clee_comunes = set(df_base["clee"]) & set(df_sig["clee"])
+
+    surv_clee = df_sig[df_sig["clee"].isin(clee_comunes)].copy()
+    surv_clee["tipo_match"] = "clee"
+    surv_clee["fecha_alta_base"] = surv_clee["clee"].map(
+        df_base.set_index("clee")["fecha_alta_norm"]
+    )
+
+    u_base = df_base[~df_base["clee"].isin(clee_comunes)].reset_index(drop=True)
+    u_sig = df_sig[~df_sig["clee"].isin(clee_comunes)].reset_index(drop=True)
+
+    pares = match_fuzzy(u_sig, u_base)
+    i_sig = [p[0] for p in pares]
+    i_base = [p[1] for p in pares]
+    mask_sig = u_sig.index.isin(i_sig)
+    mask_base = u_base.index.isin(i_base)
+
+    surv_fuzzy = u_sig[mask_sig].copy()
+    surv_fuzzy["tipo_match"] = "fuzzy"
+    fecha_base = {p[0]: u_base.iloc[p[1]]["fecha_alta_norm"] for p in pares}
+    surv_fuzzy["fecha_alta_base"] = surv_fuzzy.index.map(fecha_base)
+
+    nacimientos = u_sig[~mask_sig].copy()
+    muertes = u_base[~mask_base].copy()
+
+    sobrevivientes = pd.concat([surv_clee, surv_fuzzy], ignore_index=True)
+    return sobrevivientes, nacimientos, muertes
+
+
 # ============================================================
-# Resumen
+# Cohorte
 # ============================================================
-def reportar(df23, df24, sobrevivientes, nacimientos, muertes):
-    total_23 = len(df23)
-    total_24 = len(df24)
-    sobrevivientes_n = len(sobrevivientes)
-    nacimientos_n = len(nacimientos)
-    muertes_n = len(muertes)
+def construir_cohortes(datos: dict):
+    """Construye la tabla de presencia de cada CLEE en cada edicion."""
+    sets = {ed: set(df["clee"]) for ed, df in datos.items()}
+    todas = set().union(*sets.values())
+    filas = []
+    for clee in todas:
+        fila = {"clee": clee}
+        for ed in EDICIONES:
+            fila[f"en_{ed}"] = int(clee in sets[ed])
+        fila["cohorte"] = next((ed for ed in EDICIONES if clee in sets[ed]), None)
+        filas.append(fila)
+    cohortes = pd.DataFrame(filas)
 
-    print("=" * 70)
-    print("  RESULTADOS DEL MATCHING")
-    print("=" * 70)
-    print(f"  Unidades 2023:        {total_23:>8,}")
-    print(f"  Unidades 2024:        {total_24:>8,}")
-    print(f"  Sobrevivientes:       {sobrevivientes_n:>8,}")
-    print(f"  Nacimientos:          {nacimientos_n:>8,}")
-    print(f"  Muertes:              {muertes_n:>8,}")
-    print()
-    print("  Verificacion de consistencia:")
-    print(f"    Sobrevivientes + Muertes  = {sobrevivientes_n + muertes_n:,} (debe ser {total_23:,})")
-    print(f"    Sobrevivientes + Nacim.   = {sobrevivientes_n + nacimientos_n:,} (debe ser {total_24:,})")
-    print()
+    # atributos desde la primera aparicion (diccionario, O(N))
+    attr = {}
+    for ed in EDICIONES:
+        d = datos[ed][["clee", "sector_servicios", "grupo_tren", "cve_mun"]].drop_duplicates("clee")
+        for fila in d.itertuples(index=False):
+            if fila.clee not in attr:
+                attr[fila.clee] = (fila.sector_servicios, fila.grupo_tren, fila.cve_mun)
+    cohortes["sector_servicios"] = cohortes["clee"].map(lambda c: attr[c][0] if c in attr else None)
+    cohortes["grupo_tren"] = cohortes["clee"].map(lambda c: attr[c][1] if c in attr else None)
+    cohortes["cve_mun"] = cohortes["clee"].map(lambda c: attr[c][2] if c in attr else None)
+    return cohortes
 
-    tipo_match = sobrevivientes["tipo_match"].value_counts()
-    print("  Sobrevivientes por tipo de match:")
-    for tipo, n in tipo_match.items():
-        print(f"    {tipo:<8} {n:>8,}")
-    print()
 
+# ============================================================
+# Reporte
+# ============================================================
+def reportar(datos, transiciones, cohortes):
     print("=" * 70)
-    print("  POR MUNICIPIO")
+    print("  UNIDADES POR EDICION")
     print("=" * 70)
-    print(f"  {'cve':<4} {'municipio':<14} {'U23':>7} {'U24':>7} {'N':>6} {'M':>6} {'S':>6} {'t.ent%':>7} {'t.sal%':>7} {'grupo':>6}")
-    for cve, nombre in MUNICIPIOS_CAMPECHE.items():
-        u23 = int((df23["cve_mun"] == cve).sum())
-        n = int((nacimientos["cve_mun"] == cve).sum())
-        m = int((muertes["cve_mun"] == cve).sum())
-        s = int((sobrevivientes["cve_mun"] == cve).sum())
-        u24 = int((df24["cve_mun"] == cve).sum())
-        t_ent = 100 * n / u23 if u23 else 0
-        t_sal = 100 * m / u23 if u23 else 0
-        grupo = df24.loc[df24["cve_mun"] == cve, "grupo_tren"].iloc[0] if u24 else "?"
-        print(f"  {cve:<4} {nombre:<14} {u23:>7,} {u24:>7,} {n:>6,} {m:>6,} {s:>6,} {t_ent:>7.1f} {t_sal:>7.1f} {grupo:>6}")
+    for ed in EDICIONES:
+        print(f"    {ed}: {len(datos[ed]):,}")
 
     print()
     print("=" * 70)
-    print("  POR SECTOR DE SERVICIOS (solo sobrevivientes/nacimientos/muertes por nivel)")
+    print("  UNIDADES POR MUNICIPIO (fusionados)")
     print("=" * 70)
-    print(f"  {'nivel':<10} {'N':>7} {'M':>7} {'S':>7}")
-    for nivel in ["nucleo", "ampliado", "excluido", "resto"]:
-        n = int((nacimientos["sector_servicios"] == nivel).sum())
-        m = int((muertes["sector_servicios"] == nivel).sum())
-        s = int((sobrevivientes["sector_servicios"] == nivel).sum())
-        print(f"  {nivel:<10} {n:>7,} {m:>7,} {s:>7,}")
+    munis = sorted(MUNICIPIOS_CAMPECHE)
+    encabezado = "  " + "".join(f"{ed:>11}" for ed in EDICIONES)
+    print(f"  {'cve':<4}{'municipio':<20}{encabezado}")
+    for cve in munis:
+        nombre = MUNICIPIOS_CAMPECHE[cve]
+        fila = f"  {cve:<4}{nombre:<20}"
+        for ed in EDICIONES:
+            n = int((datos[ed]["cve_mun"] == cve).sum())
+            fila += f"{n:>11,}"
+        print(fila)
 
     print()
     print("=" * 70)
-    print("  POR GRUPO TREN MAYA")
+    print("  TRANSICIONES (Sobrevivientes / Nacimientos / Muertes)")
     print("=" * 70)
-    print(f"  {'grupo':<6} {'N':>7} {'M':>7} {'S':>7}")
-    for grupo in ["A", "B", "C"]:
-        n = int((nacimientos["grupo_tren"] == grupo).sum())
-        m = int((muertes["grupo_tren"] == grupo).sum())
-        s = int((sobrevivientes["grupo_tren"] == grupo).sum())
-        print(f"  {grupo:<6} {n:>7,} {m:>7,} {s:>7,}")
+    for i in range(len(EDICIONES) - 1):
+        e1, e2 = EDICIONES[i], EDICIONES[i + 1]
+        s, n, m = transiciones[(e1, e2)]
+        total_base = len(datos[e1])
+        print(f"    {e1} -> {e2}: S={len(s):,}  N={len(n):,}  M={len(m):,}  "
+              f"(S+M={len(s)+len(m):,} vs base {total_base:,})")
+
+    print()
+    print("=" * 70)
+    print("  COHORTES (presencia en las 4 ediciones)")
+    print("=" * 70)
+    total = len(cohortes)
+    en_todas = int((cohortes[[f"en_{ed}" for ed in EDICIONES]].sum(axis=1) == len(EDICIONES)).sum())
+    print(f"    Total CLEEs unicos: {total:,}")
+    print(f"    Presentes en las 4 ediciones: {en_todas:,} ({100*en_todas/total:.1f}%)")
+    for i, ed in enumerate(EDICIONES):
+        cohorte = cohortes[cohortes["cohorte"] == ed]
+        sobrevive_ultima = int(cohorte[f"en_{EDICIONES[-1]}"].sum()) if len(cohorte) else 0
+        print(f"    Cohorte {ed}: {len(cohorte):,} -> sobreviven en {EDICIONES[-1]}: "
+              f"{sobrevive_ultima:,} ({100*sobrevive_ultima/len(cohorte):.1f}%)" if len(cohorte) else f"    Cohorte {ed}: 0")
 
 
 # ============================================================
@@ -282,53 +319,51 @@ def reportar(df23, df24, sobrevivientes, nacimientos, muertes):
 # ============================================================
 def main():
     print("=" * 70)
-    print("  MATCHING DEMOGRAFIA DE NEGOCIOS - CAMPECHE")
+    print("  MATCHING MULTIEDICION - CAMPECHE (2022-2025)")
     print("=" * 70)
 
-    df23 = preparar(pd.read_csv(DATA_RAW / "campeche_2023.csv", dtype=str))
-    df24 = preparar(pd.read_csv(DATA_RAW / "campeche_2024.csv", dtype=str))
+    # 1. Leer y preparar cada edicion
+    datos = {}
+    for ed in EDICIONES:
+        ruta = DATA_RAW / f"campeche_{ed}.csv"
+        datos[ed] = preparar(pd.read_csv(ruta, dtype=str))
+        print(f"  {ed}: {len(datos[ed]):,} registros preparados")
 
-    # 1. Match por CLEE
-    clee_comunes = set(df23["clee"]) & set(df24["clee"])
-    surv_clee_24 = df24[df24["clee"].isin(clee_comunes)].copy()
-    surv_clee_24["tipo_match"] = "clee"
-    surv_clee_24["fecha_alta_2023"] = surv_clee_24["clee"].map(
-        df23.set_index("clee")["fecha_alta_norm"]
-    )
+    # 2. Emparejar ediciones consecutivas
+    transiciones = {}
+    for i in range(len(EDICIONES) - 1):
+        e1, e2 = EDICIONES[i], EDICIONES[i + 1]
+        s, n, m = emparejar(datos[e1], datos[e2])
+        transiciones[(e1, e2)] = (s, n, m)
+        print(f"  Transicion {e1}->{e2}: S={len(s):,} N={len(n):,} M={len(m):,}")
 
-    u23 = df23[~df23["clee"].isin(clee_comunes)].reset_index(drop=True)
-    u24 = df24[~df24["clee"].isin(clee_comunes)].reset_index(drop=True)
+    # 3. Cohorte
+    cohortes = construir_cohortes(datos)
+    print(f"  Cohortes: {len(cohortes):,} CLEEs unicos")
 
-    # 2. Match por regla de 3 variables (nombre, SCIAN, ubicacion)
-    pares = match_fuzzy(u24, u23)
-    i24_match = [p[0] for p in pares]
-    i23_match = [p[1] for p in pares]
-    mask24 = u24.index.isin(i24_match)
-    mask23 = u23.index.isin(i23_match)
-
-    surv_fuzzy_24 = u24[mask24].copy()
-    surv_fuzzy_24["tipo_match"] = "fuzzy"
-    fecha_2023 = {p[0]: u23.iloc[p[1]]["fecha_alta_norm"] for p in pares}
-    surv_fuzzy_24["fecha_alta_2023"] = surv_fuzzy_24.index.map(fecha_2023)
-
-    nacimientos = u24[~mask24].copy()
-    muertes = u23[~mask23].copy()
-
-    sobrevivientes = pd.concat([surv_clee_24, surv_fuzzy_24], ignore_index=True)
-
-    # 3. Persistencia en SQLite
+    # 4. Persistencia en SQLite
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(DB_PATH) as con:
-        df23.to_sql("denue_2023", con, if_exists="replace", index=False)
-        df24.to_sql("denue_2024", con, if_exists="replace", index=False)
-        sobrevivientes.to_sql("sobrevivientes", con, if_exists="replace", index=False)
-        nacimientos.to_sql("nacimientos", con, if_exists="replace", index=False)
-        muertes.to_sql("muertes", con, if_exists="replace", index=False)
+        for ed in EDICIONES:
+            datos[ed].to_sql(f"denue_{ed}", con, if_exists="replace", index=False)
+        for (e1, e2), (s, n, m) in transiciones.items():
+            s.to_sql(f"t_{e1}__{e2}_sobrevivientes", con, if_exists="replace", index=False)
+            n.to_sql(f"t_{e1}__{e2}_nacimientos", con, if_exists="replace", index=False)
+            m.to_sql(f"t_{e1}__{e2}_muertes", con, if_exists="replace", index=False)
+        cohortes.to_sql("cohortes", con, if_exists="replace", index=False)
+
+        # Tablas de compatibilidad con el snapshot 2023-2024 (notebooks 01/02)
+        datos["2023_11"].to_sql("denue_2023", con, if_exists="replace", index=False)
+        datos["2024_11"].to_sql("denue_2024", con, if_exists="replace", index=False)
+        s, n, m = transiciones[("2023_11", "2024_11")]
+        s.to_sql("sobrevivientes", con, if_exists="replace", index=False)
+        n.to_sql("nacimientos", con, if_exists="replace", index=False)
+        m.to_sql("muertes", con, if_exists="replace", index=False)
 
     print(f"\n  Base de datos guardada en: {DB_PATH.relative_to(BASE_DIR)}")
     print()
 
-    reportar(df23, df24, sobrevivientes, nacimientos, muertes)
+    reportar(datos, transiciones, cohortes)
 
     print("\n" + "=" * 70)
     print("  MATCHING COMPLETADO")

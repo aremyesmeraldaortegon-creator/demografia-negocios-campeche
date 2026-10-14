@@ -73,9 +73,11 @@ Dado que las estaciones se inauguraron por tramos en fechas distintas, la clasif
 
 | Grupo | Municipios | Justificación |
 |---|---|---|
-| A. Conectados y expuestos | Calkiní, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega | Estaciones operativas desde dic-2023 |
+| A. Conectados y expuestos | Calkiní-Dzitbalché, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega | Estaciones operativas desde dic-2023 |
 | B. Conectados, exposición marginal | Carmen, Calakmul, Candelaria | Estaciones del Tramo 7, abiertas hasta dic-2024 (después del corte nov-2024) |
-| C. No conectados | Hopelchén, Palizada, Seybaplaya, Dzitbalché | Sin estación |
+| C. No conectados | Hopelchén, Palizada, Seybaplaya | Sin estación |
+
+> **Fusión Calkiní-Dzitbalché:** la edición 11/2022 no codifica a Dzitbalché como municipio separado; sus negocios aparecen bajo Calkiní (`cve_mun 001`). Para mantener una serie municipal consistente entre ediciones, Dzitbalché se fusiona con Calkiní en una sola unidad "Calkiní-Dzitbalché" (`013 → 001`) en todo el análisis.
 
 > Las fechas exactas de apertura de cada estación deben confirmarse contra la fuente oficial de FONATUR / Olmeca-Maya-Mexica antes de fijar esta clasificación como definitiva.
 
@@ -203,7 +205,7 @@ El crecimiento neto positivo coexiste con una alta mortalidad y una base microem
 ### 6.3 Otros hallazgos
 
 - **Crecimiento generalizado pero desigual:** natalidad superior a mortalidad en 12 de los 13 municipios.
-- **Dinamismo concentrado en municipios pequeños:** Calakmul (+29.1%), Dzitbalché (+28.3%) y Hopelchén (+25.7%) encabezan el crecimiento neto; Palizada es el único municipio en contracción.
+- **Dinamismo concentrado en municipios pequeños:** Calakmul (+28.4%), Hopelchén (+26.0%) y Carmen (+21.2%) encabezan el crecimiento neto; Palizada es el único municipio en contracción.
 - **El sector de servicios es minoritario y su dinamismo se concentra en el grupo B:** el índice de dinamismo del sector de servicios es +0.0127 a nivel global, positivo sobre todo en Carmen, Calakmul y Candelaria (grupo B).
 
 > **Nota de interpretación:** parte del crecimiento observado puede reflejar la mejor cobertura de los Censos Económicos 2024, no solo nueva actividad económica. Los datos no permiten distinguir con certeza entre reemplazo puro, renovación positiva o artefacto censal.
