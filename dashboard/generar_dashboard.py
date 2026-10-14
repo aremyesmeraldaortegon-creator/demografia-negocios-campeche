@@ -373,6 +373,8 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
     body { margin:0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
            background:#eef1f5; color:#1f2933; line-height:1.6; }
     .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 22px 80px; }
+    nav { margin-bottom: 20px; }
+    nav a { color: #1f77b4; text-decoration: none; font-weight: 600; }
     header.hero { background: linear-gradient(135deg, #1f77b4 0%, #14395e 100%);
                   color:#fff; padding: 56px 40px; border-radius: 16px; margin-bottom: 34px; }
     header.hero h1 { margin:0 0 14px; font-size: 2.1rem; line-height:1.3; }
@@ -534,6 +536,8 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
 </head>
 <body>
 <div class="wrap">
+
+<nav><a href="tendencias.html">Tendencias 2022–2025 →</a></nav>
 
 <header class="hero">
   <h1>¿Cómo cambió el tejido empresarial de Campeche tras la apertura del Tren Maya?</h1>

@@ -4,14 +4,16 @@ Este documento describe el procedimiento operativo del análisis de demografía 
 
 ## 1. Fuente de datos
 
-Se comparan dos ediciones del DENUE (INEGI), descargadas por el portal de descarga masiva:
+Se comparan **cuatro ediciones** del DENUE (INEGI), descargadas por el portal de descarga masiva:
 
-| Foto | Edición | Archivo procesado |
-|------|---------|-------------------|
-| Antes | nov-2023 | `data/raw/campeche_2023.csv` |
-| Después | nov-2024 | `data/raw/campeche_2024.csv` |
+| Edición | Tipo | Archivo procesado |
+|---------|------|-------------------|
+| 11/2022 | regular | `data/raw/campeche_2022_11.csv` |
+| 11/2023 | regular | `data/raw/campeche_2023_11.csv` |
+| 11/2024 | exhaustiva (Censos Económicos) | `data/raw/campeche_2024_11.csv` |
+| 05/2025 | regular | `data/raw/campeche_2025_05.csv` |
 
-Ambas se filtran a `cve_ent == "04"` (Campeche) mediante `etl/01_procesar_descarga.py`.
+Todas se filtran a `cve_ent == "04"` (Campeche) mediante `etl/01_procesar_descarga.py`.
 
 ## 2. Preparación de datos (`etl/02_matching_demografia.py`)
 
@@ -69,16 +71,18 @@ El resto de los códigos se etiquetan como `resto`.
 
 Los resultados se guardan en `data/denue.db` (SQLite) con las tablas:
 
-- `denue_2023`, `denue_2024`: datos preparados (con claves normalizadas y clasificaciones).
-- `sobrevivientes`: negocios presentes en ambas ediciones (con `tipo_match` = `clee` o `fuzzy`).
-- `nacimientos`: negocios solo en 2024.
-- `muertes`: negocios solo en 2023.
+- `denue_2022_11`, `denue_2023_11`, `denue_2024_11`, `denue_2025_05`: datos preparados (con claves normalizadas y clasificaciones, y con la fusión Calkiní-Dzitbalché).
+- Transiciones consecutivas: `t_2022_11__2023_11_{sobrevivientes,nacimientos,muertes}`, `t_2023_11__2024_11_*`, `t_2024_11__2025_05_*`.
+- `cohortes`: un registro por `clee` con su presencia en cada edición (`en_YYYY_MM`) y su `cohorte` (primera edición donde aparece).
+
+> Se conservan las tablas `denue_2023`, `denue_2024`, `sobrevivientes`, `nacimientos` y `muertes` como snapshot de compatibilidad 2023→2024 para los notebooks 01/02.
 
 ### Verificación de consistencia
 
 ```
-Sobrevivientes + Muertes   == unidades 2023
-Sobrevivientes + Nacimientos == unidades 2024
+Por cada transicion (e1 -> e2):
+Sobrevivientes + Muertes   == unidades de e1
+Sobrevivientes + Nacimientos == unidades de e2
 ```
 
 ## 6. Resultados (nov-2023 vs nov-2024)
@@ -95,10 +99,12 @@ Sobrevivientes + Nacimientos == unidades 2024
 
 ## 7. Análisis
 
-El análisis se realiza en dos notebooks que leen de `data/denue.db` (con fallback automático: si la base no existe, se regenera ejecutando `etl/02_matching_demografia.py`):
+El análisis se realiza en notebooks que leen de `data/denue.db` (con fallback automático: si la base no existe, se regenera ejecutando `etl/02_matching_demografia.py`):
 
 - **`notebooks/01_panorama_general.ipynb`**: panorama agregado por municipio y sector, distribución por tamaño y verificación de consistencia.
 - **`notebooks/02_sector_servicios.ipynb`**: sector de servicios (núcleo vs resto, niveles y subsectores), grupos de exposición al Tren Maya e índice de dinamismo; exporta tablas a `data/processed/`.
+- **`notebooks/03_tendencias.ipynb`**: serie temporal 2022–2025 y el artefacto censal de 2024.
+- **`notebooks/04_cohortes.ipynb`**: supervivencia de largo plazo por cohorte, sector y grupo Tren Maya.
 
 ### 7.1 Métricas
 
@@ -121,7 +127,7 @@ El análisis se realiza en dos notebooks que leen de `data/denue.db` (con fallba
 ### 7.2 Hallazgos preliminares
 
 - Crecimiento neto positivo y generalizado (+12.3%), con natalidad superior a mortalidad en 12 de los 13 municipios.
-- Mayor crecimiento neto en municipios pequeños: Calakmul (+29.1%), Dzitbalché (+28.3%) y Hopelchén (+25.7%).
+- Mayor crecimiento neto en municipios pequeños: Calakmul (+28.4%), Hopelchén (+26.0%) y Carmen (+21.2%).
 - Palizada es el único municipio en contracción.
 - El 85.7% de las unidades son microempresas (0-5 personas), coherente con la paradoja del PIB campechano.
 - El índice de dinamismo del sector de servicios es +0.0127 a nivel global y se concentra en el grupo B (+0.0186).
@@ -136,3 +142,34 @@ El análisis se realiza en dos notebooks que leen de `data/denue.db` (con fallba
 **Posible artefacto de cobertura censal.** La edición nov-2024 está ligada a los Censos Económicos 2024, una actualización *exhaustiva* (no incremental) que tiende a capturar más unidades que una edición intermedia. Parte del crecimiento observado —y parte de los "nacimientos"— puede reflejar mejor cobertura más que creación real de negocios. Esto es especialmente relevante en Carmen (grupo B), que muestra la mayor tasa de entrada.
 
 **Reemplazo, renovación o artefacto: no son distinguibles con estos datos.** Con solo dos cortes (nov-2023 y nov-2024) no es posible separar con certeza el *reemplazo puro* (cierre y apertura de giros similares), la *renovación positiva* (negocios que cierran para reabrir mejor capitalizados) del *artefacto censal*. La interpretación de "más reemplazo que desarrollo" es, por tanto, una hipótesis robusta pero no una medición causal definitiva.
+
+## 8. Diseño multianual (2022–2025)
+
+La expansión a cuatro ediciones introduce tres consideraciones nuevas.
+
+### 8.1 Matching consecutivo y cohortes
+
+- Se emparejan **ediciones consecutivas** (2022→2023, 2023→2024, 2024→2025) con el mismo esquema híbrido (CLEE + regla de 3 variables + validación con `fecha_alta`).
+- Las **cohortes** se definen por `clee`: la *cohorte* de un negocio es la primera edición en la que aparece. Esto permite medir la supervivencia de largo plazo (p. ej. la cohorte 2022 y cuánto de ella sigue en 2025).
+
+### 8.2 Ruptura metodológica de 2024 (artefacto censal)
+
+La edición 11/2024 proviene de los Censos Económicos (actualización *exhaustiva*), mientras 11/2022, 11/2023 y 05/2025 son regulares. Esto contamina las dos transiciones adyacentes:
+
+| Transición | Ventana | Naturaleza | Efecto |
+|---|---|---|---|
+| 2022→2023 | 12m | regular→regular | **limpia** |
+| 2023→2024 | 12m | regular→exhaustiva | nacimientos inflados (mejor cobertura) |
+| 2024→2025 | 6m | exhaustiva→regular | muertes infladas + ventana corta |
+
+La **tasa de supervivencia** lo confirma: 99.1% (2022→2023), **69.4%** (2023→2024) y 97.5% (2024→2025). La caída a 69.4% es la re-codificación masiva de CLEEs del censo, no un colapso real.
+
+### 8.3 Ventanas temporales desiguales
+
+Las transiciones no miden lo mismo: 12 meses (2022→2023), 12 meses (2023→2024) y **6 meses** (2024→2025, por usar la edición de mayo 2025). Al graficar tasas, se anota la ventana real de cada transición (no se asumen "años").
+
+### 8.4 Resultados clave de la expansión
+
+- 66,991 CLEEs únicos; **35.9% presentes en las 4 ediciones**.
+- Cohorte 2022 (41,638) → **62.2% sobrevive a 2025**.
+- El artefacto censal 2024 explica la mayor parte de la rotación anormal observada en la transición 2023→2024.

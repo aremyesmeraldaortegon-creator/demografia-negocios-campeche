@@ -212,21 +212,44 @@ El crecimiento neto positivo coexiste con una alta mortalidad y una base microem
 
 ---
 
+## Expansión multianual 2022–2025
+
+*[En desarrollo — rama `feature/expansion-2022-2025`]*
+
+El análisis se amplió de 2 a **4 ediciones** del DENUE para estudiar tendencias temporales y cohortes:
+
+| Edición | Tipo |
+|---|---|
+| 11/2022 | regular |
+| 11/2023 | regular |
+| 11/2024 | exhaustiva (Censos Económicos) |
+| 05/2025 | regular |
+
+- **Tres transiciones consecutivas** (2022→2023, 2023→2024, 2024→2025) con ventanas reales de **12m, 12m y 6m** (la última por usar la edición de mayo 2025).
+- **Artefacto censal 2024:** la transición 2023→2024 muestra una supervivencia anormal de **69.4%** (vs 99.1% en 2022→2023 y 97.5% en 2024→2025), producto de la re-codificación masiva de CLEEs del censo, no de un colapso real.
+- **Cohortes:** 66,991 CLEEs únicos; 35.9% presentes en las 4 ediciones; la cohorte 2022 sobrevive **62.2%** a 2025.
+- **Fusión Calkiní-Dzitbalché:** la edición 2022 no separa Dzitbalché; se fusiona con Calkiní para mantener la serie consistente.
+
+Ver notebooks `03_tendencias.ipynb` y `04_cohortes.ipynb`, y la página `docs/tendencias.html`.
+
+---
+
 ## Dashboard interactivo
 
 El proyecto incluye un dashboard web autocontenido, generado con Plotly y publicado en GitHub Pages.
 
 - **URL pública:** `https://aremyesmeraldaortegon-creator.github.io/demografia-negocios-campeche/`
-- **Archivo:** `docs/index.html` (autocontenido: incluye Plotly.js y el GeoJSON del mapa, sin dependencias externas).
-- **Secciones:** KPIs, mapa coroplético de crecimiento neto por municipio, tasas por municipio, distribución por tamaño, sector de servicios, índice de dinamismo por grupo Tren Maya, top 5 y tabla completa con descarga de CSVs.
+- **Páginas:** `docs/index.html` (snapshot 2023–2024) y `docs/tendencias.html` (tendencias 2022–2025). Ambas autocontenidas.
+- **Secciones (snapshot):** KPIs, mapa coroplético de crecimiento neto por municipio, tasas por municipio, distribución por tamaño, sector de servicios, índice de dinamismo por grupo Tren Maya, top 5 y tabla completa con descarga de CSVs.
 
 ### Regenerar el dashboard
 
 ```bash
-python dashboard/generar_dashboard.py
+python dashboard/generar_dashboard.py     # docs/index.html (snapshot)
+python dashboard/generar_tendencias.py    # docs/tendencias.html (2022-2025)
 ```
 
-> Requiere `plotly` (ya en `requirements.txt`). Lee `data/denue.db` y el GeoJSON `dashboard/campeche_municipios.geojson`, y escribe `docs/index.html`.
+> Requiere `plotly` (ya en `requirements.txt`). Leen `data/denue.db` y el GeoJSON `dashboard/campeche_municipios.geojson`.
 
 ### Publicar en GitHub Pages
 
@@ -245,14 +268,18 @@ demografia-negocios-campeche/
 ├── data/              # Datos crudos y base SQLite (ignorados por git)
 ├── dashboard/
 │   ├── generar_dashboard.py        # Genera docs/index.html
-│   └── campeche_municipios.geojson # GeoJSON de los 13 municipios
+│   ├── generar_tendencias.py       # Genera docs/tendencias.html
+│   └── campeche_municipios.geojson # GeoJSON de los municipios
 ├── docs/
-│   ├── index.html      # Dashboard (autocontenido)
+│   ├── index.html      # Dashboard snapshot (autocontenido)
+│   ├── tendencias.html # Dashboard tendencias 2022-2025 (autocontenido)
 │   └── metodologia.md  # Metodología detallada
 ├── etl/               # Scripts de extracción, transformación y carga
 ├── notebooks/
 │   ├── 01_panorama_general.ipynb
-│   └── 02_sector_servicios.ipynb
+│   ├── 02_sector_servicios.ipynb
+│   ├── 03_tendencias.ipynb
+│   └── 04_cohortes.ipynb
 ├── README.md
 ├── .env.example       # Variables de entorno de ejemplo
 ├── .gitignore
