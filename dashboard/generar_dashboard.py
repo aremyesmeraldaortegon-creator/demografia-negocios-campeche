@@ -609,6 +609,25 @@ def construir_html(figs_html, res, df23, df24, sobre, nac, mue, idx_global, idx_
   cobertura censal.</p>
 </section>
 
+<section class="tarjeta">
+  <div class="sec-cab"><span class="sec-num">?</span><h2>Glosario de claves y abreviaturas</h2></div>
+  <details class="scorp" open>
+    <summary>¿Qué significan estos términos?</summary>
+    <p>
+      · <b>CLEE</b> — Clave Única de Identificación de Establecimientos: identificador único del INEGI para cada negocio.<br>
+      · <b>SCIAN</b> — Sistema de Clasificación Industrial de América del Norte: código que identifica el giro del negocio.<br>
+      · <b>U23 / U24</b> — unidades económicas (negocios) en 2023 y 2024.<br>
+      · <b>S</b> — Sobrevivientes (presentes en ambas ediciones).<br>
+      · <b>N</b> — Nacimientos (negocios nuevos).<br>
+      · <b>M</b> — Muertes (negocios que dejaron de aparecer).<br>
+      · <b>Núcleo / Ampliado / Excluido / Resto</b> — niveles del sector de servicios.<br>
+      · <b>Grupo A / B / C</b> — exposición al Tren Maya (conectados y expuestos / marginal / no conectados).<br>
+      · <b>Índice de dinamismo</b> — (N_núcleo / N_total) − (M_núcleo / M_total).<br>
+      · <b>Crecimiento neto</b> — variación porcentual de unidades entre dos ediciones.
+    </p>
+  </details>
+</section>
+
 <footer>Fuente: DENUE / INEGI · Generado con Plotly · Demografía de negocios en Campeche</footer>
 
 </div>

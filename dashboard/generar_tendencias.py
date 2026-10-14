@@ -187,6 +187,24 @@ def construir_html(figs, vals_supervivencia, pts_cohorte):
   {figs["cohorte"]}
 </section>
 
+<section>
+  <h2>Glosario de claves y abreviaturas</h2>
+  <details open>
+    <summary>¿Qué significan estos términos?</summary>
+    <div class="que-es">
+      · <b>CLEE</b> — Clave Única de Identificación de Establecimientos: identificador único del INEGI para cada negocio.<br>
+      · <b>SCIAN</b> — Sistema de Clasificación Industrial de América del Norte: código que identifica el giro del negocio.<br>
+      · <b>Edición</b> — una "foto" del DENUE en un momento dado (p. ej. nov-2022, may-2025).<br>
+      · <b>Transición</b> — comparación entre dos ediciones consecutivas.<br>
+      · <b>U_base</b> — unidades económicas en la edición de partida de una transición.<br>
+      · <b>S / N / M</b> — sobrevivientes, nacimientos y muertes entre dos ediciones.<br>
+      · <b>Cohorte</b> — conjunto de negocios que aparecen por primera vez en una misma edición.<br>
+      · <b>Artefacto censal</b> — distorsión que introduce la edición exhaustiva de 2024 (re-codifica masivamente las CLEEs).<br>
+      · <b>Ventana temporal</b> — meses reales entre dos ediciones (12m, 12m o 6m).
+    </div>
+  </details>
+</section>
+
 <footer>Fuente: DENUE / INEGI · Generado con Plotly · Demografía de negocios en Campeche</footer>
 
 </div>
