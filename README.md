@@ -6,326 +6,232 @@
   </a>
 </p>
 
-Análisis de nacimientos, muertes y sobrevivencia de negocios en los 13 municipios de Campeche a partir del DENUE (nov-2023 vs. nov-2024), para explorar por qué un PIB per cápita alto no se refleja en el dinamismo de la economía local. La apertura del Tren Maya (dic-2023) se usa como experimento natural, no como foco principal.
+---
+
+## 📌 Resumen ejecutivo
+
+Este proyecto analiza la evolución del **tejido empresarial de los 13 municipios de Campeche** entre noviembre 2022 y mayo 2025, usando **4 ediciones del DENUE** (Directorio Estadístico Nacional de Unidades Económicas) del INEGI. La pregunta central es: ¿qué tan dinámico es el tejido empresarial de Campeche, y cómo se relaciona con la paradoja de un PIB per cápita alto que no se refleja en la economía local?
+
+**Los hallazgos principales:**
+- **+13.8% de crecimiento aparente** en unidades económicas (de 41,638 a 47,408)
+- **85% de los negocios son microempresas** (0-5 personas) — el tejido no se diversifica
+- **El Censo Económico 2024 introduce un artefacto metodológico** que infla nacimientos y muertes
+- **El efecto del Tren Maya es ambiguo** — el Grupo A (municipios con estaciones operativas) no muestra un dinamismo diferencial claro
+
+**Conclusión:** La economía campechana **reemplaza más de lo que desarrolla**. El petróleo genera renta, no tejido productivo robusto.
 
 ---
 
-## 0. Nota metodológica: por qué se hace así
+## 🎯 Pregunta de investigación
 
-Antes de presentar cualquier cifra, conviene explicar las tres decisiones metodológicas que estructuran todo el análisis. No son arbitrarias: cada una responde a una limitación concreta de la fuente de datos.
-
-### 0.1 ¿Por qué comparar nov-2023 vs. nov-2024?
-
-El Tren Maya se inauguró en diciembre de 2023. Nov-2023 es el último corte previo a la apertura, mientras que nov-2024 es el primer corte anual completo posterior y corresponde a los Censos Económicos 2024 (una actualización exhaustiva, no incremental). Comparar un año exacto entre ambas fotos aísla el efecto del Tren Maya de variaciones estacionales: cualquier diferencia entre las dos ediciones no puede atribuirse a la estacionalidad de la demanda, sino al cambio estructural en el tejido empresarial.
-
-### 0.2 ¿Por qué un esquema híbrido para definir nacimiento/muerte?
-
-El DENUE no es un panel longitudinal: no sigue al mismo negocio con un identificador perfectamente estable entre ediciones. Depender de un solo criterio produciría sesgos severos:
-
-- Si solo se usa la CLEE, cualquier cambio administrativo del INEGI se leería como "muerte + nacimiento" aunque el negocio siga operando.
-- Si solo se usa la llave compuesta (nombre + dirección + giro), cualquier cambio de nombre o mudanza mínima se leería como muerte.
-
-Por eso se adopta el esquema híbrido, siguiendo la lógica del Estudio de Demografía de los Negocios (EDN) del INEGI:
-
-1. Coincidencia por CLEE → sobreviviente.
-2. Si no hay match: regla de 3 variables clave (nombre, SCIAN, ubicación). Si cambia ≤1 → sobreviviente; ≥2 → muerte + nacimiento.
-3. Validación auxiliar con FECHA_ALTA.
-
-Detalle operativo en `docs/metodologia.md`.
-
-### 0.3 ¿Por qué estratificar el sector de servicios en 3 niveles?
-
-Los giros que suelen agruparse como "servicios" no responden igual a los mismos estímulos. Meterlos todos en una sola bolsa introduce dos problemas:
-
-1. **Circularidad causal.** El código SCIAN 4871 (transporte turístico terrestre) podría incluir al propio Tren Maya. Medir el efecto del Tren Maya incluyendo al Tren Maya en la muestra invalida el análisis.
-
-2. **Heterogeneidad no controlada.** Museos (7121) y parques recreativos (7132) tienen dinámicas muy distintas a las de un hotel: muchos son públicos y su supervivencia no depende del mercado, sino del presupuesto gubernamental.
-
-Por eso se trabaja con tres niveles:
-
-| Nivel | SCIAN | Rol en el análisis |
-|---|---|---|
-| Núcleo | 7211, 7225, 5615 | Análisis principal |
-| Ampliado | + 7224, 7132, 7121 | Análisis de robustez |
-| Excluido | 4871 | Excluido por circularidad causal |
+> **¿Qué tan dinámico es el tejido empresarial de los 13 municipios de Campeche, y cómo se relaciona ese dinamismo con la paradoja de un PIB per cápita alto que no se refleja en la economía local?**
 
 ---
 
-## 1. Contexto y objetivo
+## 📖 1. Contexto: la paradoja del PIB campechano
 
-### 1.1 La paradoja del PIB campechano
+Campeche figura entre los estados con **mayor PIB per cápita de México**, gracias a la extracción de hidrocarburos en la Sonda de Campeche. Sin embargo, ese indicador convive con una **economía local de escaso dinamismo** y niveles altos de rezago social.
 
-Campeche encarna una de las paradojas económicas más marcadas de México: figura entre los estados con mayor **PIB per cápita** del país, gracias a la extracción de hidrocarburos en la Sonda de Campeche, y sin embargo ese indicador convive con una economía local de escaso dinamismo y con niveles altos de rezago social. La explicación es estructural: la actividad petrolera funciona como una **economía de enclave**. Es intensiva en capital, se concentra en plataformas marinas lejos de los municipios y tiene poco derrame sobre el comercio y los servicios que sostienen la vida económica cotidiana. Genera renta, no necesariamente empleo ni dinamismo de base.
+La explicación es estructural: la actividad petrolera funciona como una **economía de enclave**:
+- Es **intensiva en capital**, no en empleo
+- Se concentra en **plataformas marinas**, lejos de los municipios
+- Tiene **poco derrame** sobre el comercio y los servicios locales
 
-El PIB per cápita, al dividir una producción extraordinariamente grande entre una población relativamente pequeña, produce una cifra engañosa: lee como "riqueza" lo que en realidad es extracción concentrada. Para saber qué tan sana está la economía *local* conviene mirar un indicador distinto: la **demografía de los negocios**, es decir, cuántas unidades económicas nacen, mueren y sobreviven.
+**Genera renta, no necesariamente empleo ni dinamismo de base.**
 
-### 1.2 ¿Por qué la demografía de los negocios?
+El PIB per cápita, al dividir una producción extraordinariamente grande entre una población relativamente pequeña, produce una **cifra engañosa**: lee como "riqueza" lo que en realidad es extracción concentrada.
 
-El dinamismo de una economía local no se observa bien en la producción agregada, sino en el flujo de sus unidades económicas. Si los negocios nacen y sobreviven, el tejido productivo de base es saludable; si mueren más de los que nacen, la actividad económica se contrae aunque el PIB estatal siga alto por la renta petrolera. Medir nacimientos, muertes y sobrevivencia permite, por tanto, mirar *debajo* del PIB y observar el pulso real de los municipios.
-
-El instrumento para hacerlo es el **Directorio Estadístico Nacional de Unidades Económicas (DENUE)** del INEGI, que al compararse entre dos ediciones (nov-2023 y nov-2024) revela las altas y las bajas del tejido empresarial. Este es el corazón del proyecto.
-
-### 1.3 El Tren Maya como experimento natural (una hipótesis, no el eje)
-
-Dentro de esta pregunta más amplia, la apertura del **Tren Maya** en diciembre de 2023 cumple un papel metodológico específico: funciona como un **experimento natural**. Se trata de un choque externo a la economía local, con fecha de inicio conocida y geografía discreta (un municipio está *conectado* si alberga una estación y *no conectado* si no), lo que permite explorar si el dinamismo empresarial difiere entre ambos grupos. Es una herramienta de identificación muy valiosa, pero **no es el foco principal**: es una de las posibles explicaciones del dinamismo diferencial, no la pregunta que estructura todo el análisis.
-
-Dado que las estaciones se inauguraron por tramos en fechas distintas, la clasificación operativa distingue tres grupos según su **exposición real** durante la ventana de análisis (nov-2023 a nov-2024):
-
-| Grupo | Municipios | Justificación |
-|---|---|---|
-| A. Conectados y expuestos | Calkiní-Dzitbalché, Campeche, Champotón, Hecelchakán, Tenabo, Escárcega | Estaciones operativas desde dic-2023 |
-| B. Conectados, exposición marginal | Carmen, Calakmul, Candelaria | Estaciones del Tramo 7, abiertas hasta dic-2024 (después del corte nov-2024) |
-| C. No conectados | Hopelchén, Palizada, Seybaplaya | Sin estación |
-
-> **Fusión Calkiní-Dzitbalché:** la edición 11/2022 no codifica a Dzitbalché como municipio separado; sus negocios aparecen bajo Calkiní (`cve_mun 001`). Para mantener una serie municipal consistente entre ediciones, Dzitbalché se fusiona con Calkiní en una sola unidad "Calkiní-Dzitbalché" (`013 → 001`) en todo el análisis.
-
-> Las fechas exactas de apertura de cada estación deben confirmarse contra la fuente oficial de FONATUR / Olmeca-Maya-Mexica antes de fijar esta clasificación como definitiva.
-
-### 1.4 Pregunta central y objetivos
-
-- **Pregunta central:** ¿qué tan dinámico es el tejido empresarial de los 13 municipios de Campeche, y cómo se relaciona ese dinamismo con la paradoja de un PIB per cápita alto que no se refleja en la economía local?
-- **Objetivos específicos:**
-  1. Medir nacimientos, muertes y sobrevivencia de unidades económicas entre nov-2023 y nov-2024 en todos los municipios y sectores.
-  2. Comparar el sector de servicios frente al resto de la economía.
-  3. Explorar, usando el Tren Maya como experimento natural, si los municipios conectados (grupo A) muestran un dinamismo diferencial frente a los no conectados.
-  4. Relacionar los hallazgos con la paradoja del PIB: ¿el petróleo genera riqueza sin derrame en el tejido empresarial de base?
-
-### 1.5 Hipótesis
-
-- **Hipótesis principal:** el alto PIB per cápita de Campeche coexiste con un tejido empresarial de base frágil, visible en tasas de nacimiento modestas o en una sobrevivencia concentrada en los giros más básicos.
-- **Hipótesis secundaria:** si el Tren Maya tuvo efecto, este debería concentrarse en el núcleo de servicios de los municipios del grupo A (conectados y expuestos), no en el conjunto de la economía ni en los municipios no conectados.
-
-Ambas hipótesis pueden resultar verdaderas o falsas: el diseño no presupone un resultado, solo establece qué observar para poder distinguir el efecto del Tren Maya de la dinámica general de la paradoja.
+Para saber qué tan sana está la economía local conviene mirar un indicador distinto: **la demografía de los negocios** — cuántas unidades económicas nacen, mueren y sobreviven.
 
 ---
 
-## 2. Fuente de datos
+## 🔬 2. Metodología
 
-### 2.1 El DENUE y la lógica de las dos "fotos"
+### 2.1 Fuente de datos: el DENUE
 
-El **Directorio Estadístico Nacional de Unidades Económicas (DENUE)** es un registro del INEGI que cataloga todas las unidades económicas activas del país: negocios, locales, oficinas, plantas y establecimientos de cualquier tamaño, desde un puesto de comida hasta una sucursal bancaria. Cada registro incluye, entre otros campos, un identificador de establecimiento, una clave única de identificación (**CLEE**), el nombre del establecimiento, el código de actividad económica (**SCIAN**), la ubicación geográfica exacta (municipio, localidad, coordenadas) y la **fecha de alta**.
+El **DENUE** es un registro del INEGI que cataloga todas las unidades económicas activas del país. Cada registro incluye:
+- Un identificador único (**CLEE**)
+- El nombre del establecimiento
+- El código de actividad económica (**SCIAN**)
+- La ubicación geográfica
+- La fecha de alta
 
-Para estudiar la *demografía* de los negocios —es decir, cuántos nacen, cuántos mueren y cuántos sobreviven en un período— no basta con una sola fotografía de la economía: se necesitan dos observaciones del mismo directorio en momentos distintos del tiempo. Cada edición del DENUE es una "foto" estática del tejido empresarial en una fecha de corte; la comparación entre dos fotos es lo que permite detectar las altas (nacimientos) y las bajas (muertes).
+**Analogía:** El CLEE es como el **CURP** de cada negocio. El SCIAN es como el **tipo de negocio** (restaurante, hotel, taller, etc.).
 
-Este proyecto compara dos ediciones:
+### 2.2 Las 4 ediciones del DENUE
 
-| Foto | Período | Edición / vía de acceso |
-|------|---------|-------------------------|
-| Antes (histórica) | nov-2023 | Edición 11/2023, descarga masiva |
-| Después (actual) | nov-2024 | Edición 11/2024, descarga masiva |
+| # | Edición | Tipo | Rol |
+|---|---------|------|-----|
+| 1 | **nov-2022** | Regular | Foto "antes" |
+| 2 | **nov-2023** | Regular | Última foto pre-Tren Maya |
+| 3 | **nov-2024** | **Exhaustiva** (Censos Económicos) | Primera foto post-Tren Maya |
+| 4 | **may-2025** | Regular | Foto de mediano plazo |
 
-La elección de estas dos ediciones no es arbitraria y se justifica en la sección 0.1: la edición de noviembre de 2023 es el último corte *previo* a la inauguración del Tren Maya (diciembre de 2023), mientras que la de noviembre de 2024 es el primer corte anual completo *posterior* y coincide con la actualización exhaustiva de los Censos Económicos 2024. Comparar exactamente un año entre ambas fotos permite aislar el efecto estructural del Tren Maya de las variaciones estacionales de la demanda.
+**¿Por qué la edición nov-2024 es especial?**
+Proviene de los **Censos Económicos 2024**, una actualización **exhaustiva** (no incremental) que revisa todos los negocios uno por uno. Esto re-codifica masivamente las CLEEs y genera un **"artefacto censal"**: parece que muchos negocios murieron y nacieron, pero en realidad solo cambiaron de número de identificación.
 
-### 2.2 ¿Por qué descarga masiva y no la API?
+### 2.3 Las tres decisiones metodológicas
 
-El INEGI ofrece dos vías de acceso programático al DENUE: una **API de consulta** y el **portal de descarga masiva**. Elegir entre ambas no es un detalle técnico menor, sino una decisión que condiciona la viabilidad misma del análisis, por dos razones.
+#### Decisión 1: Comparar 4 ediciones (2022-2025)
 
-**Primera razón: la API no permite consultar ediciones históricas.** El endpoint de consulta del API (`https://www.inegi.org.mx/app/api/denue/v1/consulta/`, que requiere un token gratuito) devuelve únicamente la **edición más reciente** del DENUE, es decir, la ligada a los Censos Económicos vigentes. No expone un parámetro para indicar "dame la edición de noviembre de 2023". En consecuencia, por API solo es posible obtener la foto "después" (nov-2024) y jamás la foto "antes" (nov-2023), lo que haría imposible el estudio de nacimientos, muertes y sobrevivencia.
+**¿Por qué?** El Tren Maya se inauguró en diciembre de 2023. Comparar nov-2022 a may-2025 permite ver:
+- **Antes** del Tren Maya (nov-2022, nov-2023)
+- **Después** (nov-2024, may-2025)
+- **Tendencias** en lugar de solo un snapshot
 
-**Segunda razón: la comparabilidad entre fotos.** Aun cuando se pudiera obtener una edición histórica por otra vía, mezclar métodos de extracción (una foto por API y otra por descarga masiva) introduciría diferencias de formato, de estructura de columnas y de filtros aplicados que contaminarían el matching entre ediciones. El portal de **descarga masiva** (`https://www.inegi.org.mx/app/descarga/default.html`) sí permite seleccionar explícitamente la **Edición** (por ejemplo, 11/2023 o 11/2024), además de la entidad federativa y el formato de salida. Al obtener *ambas* ediciones por esta vía, se garantiza que las dos fotos compartan el mismo esquema y los mismos criterios, condición necesaria para que la comparación sea válida.
+#### Decisión 2: Esquema híbrido para definir nacimiento/muerte
 
-Por lo tanto, la regla de este proyecto es: **descarga masiva para reconstruir el panel histórico (ambas ediciones) y API solo para consultas puntuales de la edición vigente** (por ejemplo, validar el giro de un establecimiento concreto o explorar una localidad específica).
+El DENUE **no es un panel longitudinal**: no sigue al mismo negocio con un identificador perfectamente estable entre ediciones. Depender de un solo criterio produciría **sesgos severos**:
+- Si solo usas **CLEE**, cualquier cambio administrativo se lee como "muerte + nacimiento"
+- Si solo usas **nombre + dirección + giro**, cualquier cambio de nombre se lee como muerte
 
-### 2.3 Procedimiento de descarga masiva
+Por eso se adopta el **esquema híbrido**, siguiendo la lógica del **Estudio de Demografía de los Negocios (EDN) del INEGI**:
 
-Los archivos crudos se obtienen manualmente desde el portal de descarga masiva del INEGI. El proceso, repetido para cada una de las dos ediciones, es el siguiente:
+1. **Coincidencia por CLEE** → sobreviviente
+2. **Si no hay match:** comparar 3 variables (nombre, SCIAN, ubicación)
+   - Si cambia **≤1 variable** → sobreviviente
+   - Si cambian **≥2 variables** → muerte + nacimiento
+3. **Refinamiento:** excluir del fuzzy los casos con nombre genérico (ej: "PESCADOR SIN NOMBRE")
 
-1. Abrir el portal de descarga masiva en `https://www.inegi.org.mx/app/descarga/default.html`.
-2. En el campo **Fuente**, seleccionar **DENUE**.
-3. En el campo **Edición**, elegir la versión deseada: **11/2023** para la foto histórica o **11/2024** para la foto actual.
-4. En el campo **Área geográfica**, seleccionar **Campeche**.
-5. En el campo **Formato**, elegir **CSV**.
-6. Descargar el archivo `.zip` resultante.
-7. Descomprimir el `.zip` dentro de la carpeta correspondiente (`data/raw/descarga_2023/` o `data/raw/descarga_2024/`).
+#### Decisión 3: Estratificar el sector de servicios en 3 niveles
 
-El `.zip` contiene, además del archivo de datos, un diccionario de datos y un archivo de metadatos. La estructura resultante, ya presente en este repositorio, es:
+Los giros "turísticos" no responden igual. Se trabaja con:
 
-```
-data/raw/
-├── descarga_2023/
-│   ├── denue_04_1123_csv.zip
-│   ├── conjunto_de_datos/denue_inegi_04_.csv
-│   ├── diccionario_de_datos/denue_diccionario_de_datos.csv
-│   └── metadatos/metadatos_denue.txt
-└── descarga_2024/
-    ├── denue_04_1124_csv.zip
-    ├── conjunto_de_datos/denue_inegi_04_.csv
-    ├── diccionario_de_datos/denue_diccionario_de_datos.csv
-    └── metadatos/metadatos_denue.txt
-```
+| Nivel | SCIAN | Rol |
+|-------|-------|-----|
+| **Núcleo** | 7211, 7225, 5615 | Análisis principal (hoteles, restaurantes, agencias) |
+| **Ampliado** | + 7224, 7132, 7121 | Análisis de robustez (bares, parques, museos) |
+| **Excluido** | 4871 | Excluido por circularidad causal (transporte turístico) |
 
-El sufijo `04_` en el nombre del archivo corresponde a la clave de entidad federativa de Campeche (`cve_ent = 04`). Como verificación adicional, el script `etl/01_procesar_descarga.py` localiza recursivamente el CSV dentro de `data/raw/descarga_YYYY/` y filtra los registros por `cve_ent == "04"` antes de generar el archivo procesado `data/raw/campeche_YYYY.csv`.
+**¿Por qué excluir el 4871?** Porque podría incluir al **propio Tren Maya**. Medir su efecto incluyéndolo en la muestra invalida el análisis.
 
----
+### 2.4 Fusión Calkiní-Dzitbalché
 
-## 3. Extracción y almacenamiento (ETL)
+**Hallazgo metodológico:** Dzitbalché (013) **no existía como municipio en nov-2022**. Sus negocios estaban codificados bajo Calkiní (001). Verificación:
+- Calkiní en 2022: 3,665 registros
+- Calkiní + Dzitbalché en 2023: 2,676 + 994 = 3,670 ✓
 
-El proceso de extracción, transformación y carga se organiza en la carpeta `etl/`. El detalle metodológico vive en `docs/metodologia.md`.
-
-- **Extracción:** descarga masiva del DENUE para **ambas** ediciones (nov-2023 y nov-2024) desde el portal del INEGI. El API solo se usa para consultas puntuales de la edición vigente.
-- **Procesamiento:** `etl/01_procesar_descarga.py` filtra los CSV crudos a Campeche (`cve_ent == "04"`) y genera `data/raw/campeche_YYYY.csv`.
-- **Matching y clasificación:** `etl/02_matching_demografia.py` normaliza, clasifica (sector de servicios y grupo Tren Maya) y aplica el matching híbrido.
-- **Almacenamiento:** base de datos SQLite (`data/denue.db`).
-
----
-
-## 4. Demografía de negocios: panorama general
-
-Notebook: `notebooks/01_panorama_general.ipynb`
-
-Análisis agregado para todos los municipios y todos los giros. Calcula por municipio la tasa de supervivencia (`S / U23`), natalidad (`N / U24`), mortalidad (`M / U23`) y crecimiento neto (`(U24 - U23) / U23`), además de la distribución por sector de servicios y por tamaño (personal ocupado).
-
-> **Nota:** `U23` = unidades económicas (negocios) en 2023; `U24` = unidades económicas en 2024.
+**Decisión:** Fusionar Calkiní + Dzitbalché en una sola unidad ("Calkiní-Dzitbalché") para todas las comparaciones. Esto mantiene la consistencia de la serie 2022-2025.
 
 ---
 
-## 5. Demografía de negocios: sector de servicios
+## 📊 3. Los dos análisis
 
-Notebook: `notebooks/02_sector_servicios.ipynb`
+### Análisis 1: Snapshot 2023-2024 (dashboard principal)
 
-Comparación del sector de servicios contra el resto de la economía, con desglose por nivel (núcleo, ampliado, excluido) y subsector (alojamiento, alimentos y bebidas, agencias de viajes, bares, parques, museos). Analiza el dinamismo diferencial por grupo de exposición al Tren Maya (A/B/C) y calcula el índice de dinamismo del sector de servicios. Exporta las tablas clave a `data/processed/`.
+Comparación puntual entre **nov-2023 y nov-2024** para medir nacimientos, muertes y supervivencia. Es el análisis base del proyecto.
 
----
+**Notebook:** `notebooks/01_panorama_general.ipynb` y `notebooks/02_sector_servicios.ipynb`
 
-## 6. Hallazgos y conclusión
+### Análisis 2: Serie temporal 2022-2025 (dashboard de tendencias)
 
-### 6.1 ¿Es el crecimiento un indicador de desarrollo?
+Análisis multianual con **4 ediciones**, 3 transiciones consecutivas y **tabla de cohortes**.
 
-La respuesta matizada es: **no necesariamente**. El crecimiento de +12.3% en el número de unidades económicas (de 41,783 a 46,923) esconde una realidad de **alta rotación empresarial** más que de desarrollo sostenido:
-
-- Solo el **69.4%** de los negocios de 2023 sobrevivió a 2024 (28,984 de 41,783); el **30.6%** murió (12,799 negocios).
-- El crecimiento neto (+5,140 unidades) se explica por **17,939 nacimientos**, no por el fortalecimiento de los negocios existentes.
-- El **85.8%** de las unidades son microempresas (0-5 personas): el tejido productivo no se diversifica ni escala.
-- El **índice de dinamismo del grupo A** (municipios con Tren Maya operativo) es **negativo (−0.0045)**, lo que sugiere que el Tren Maya no ha dinamizado los negocios existentes.
-
-### 6.2 Conclusión clave: hay más "reemplazo" que "desarrollo"
-
-El crecimiento neto positivo coexiste con una alta mortalidad y una base microempresarial: nacen muchos negocios y mueren casi tantos. La economía local **se reemplaza más de lo que se desarrolla**. Esta rotación es coherente con la paradoja del PIB campechano: la renta petrolera no se traduce en un tejido empresarial robusto y acumulativo, sino en un flujo constante de aperturas y cierres.
-
-### 6.3 Otros hallazgos
-
-- **Crecimiento generalizado pero desigual:** natalidad superior a mortalidad en 12 de los 13 municipios.
-- **Dinamismo concentrado en municipios pequeños:** Calakmul (+28.4%), Hopelchén (+26.0%) y Carmen (+21.2%) encabezan el crecimiento neto; Palizada es el único municipio en contracción.
-- **El sector de servicios es minoritario y su dinamismo se concentra en el grupo B:** el índice de dinamismo del sector de servicios es +0.0127 a nivel global, positivo sobre todo en Carmen, Calakmul y Candelaria (grupo B).
-
-> **Nota de interpretación:** parte del crecimiento observado puede reflejar la mejor cobertura de los Censos Económicos 2024, no solo nueva actividad económica. Los datos no permiten distinguir con certeza entre reemplazo puro, renovación positiva o artefacto censal.
-
-### 6.4 Hallazgos de la expansión multianual (2022–2025)
-
-#### Hallazgo 1: Estabilidad estructural del tejido microempresarial
-
-- **(a) Qué:** la proporción de microempresas (0-5 personas) se mantiene estable en ~85% durante los 4 años: **84.5%** (2022), **84.4%** (2023), **85.8%** (2024), **85.8%** (2025).
-- **(b) De dónde:** tablas `denue_2022_11`, `denue_2023_11`, `denue_2024_11`, `denue_2025_05` en `data/denue.db`. Campo `per_ocu` (personal ocupado).
-- **(c) Cómo:** para cada edición, se cuentan las unidades por rango de `per_ocu` y se divide el rango 0-5 personas entre el total × 100.
-- **(d) Por qué:** refuerza la paradoja del PIB campechano. Ni siquiera con la apertura del Tren Maya (dic-2023) el tejido empresarial escala a empresas medianas o grandes; la economía local sigue atrapada en microescala.
-- **(e) Limitaciones:** la categoría "0-5 personas" agrupa micronegocios muy heterogéneos (desde puestos informales hasta pequeñas empresas formales). No distingue entre ambos.
-
-#### Hallazgo 2: Artefacto censal de 2024 (transición anómala)
-
-- **(a) Qué:** la tasa de supervivencia cae a **69.4%** en 2023→2024, mientras que en 2022→2023 es **99.0%** y en 2024→2025 es **97.5%**.
-- **(b) De dónde:** tablas `t_2022_11__2023_11`, `t_2023_11__2024_11`, `t_2024_11__2025_05` en `data/denue.db`.
-- **(c) Cómo:** `S / U_base × 100` para cada transición.
-- **(d) Por qué:** la edición nov-2024 proviene de los Censos Económicos 2024 (actualización *exhaustiva*), que re-codifica masivamente las CLEEs. Esto genera falsos "nacimientos + muertes" que el matching híbrido solo rescata parcialmente. **No** es un colapso real de negocios.
-- **(e) Limitaciones:** los datos no permiten distinguir con certeza entre (i) cierre real de negocios, (ii) re-codificación administrativa y (iii) mejor cobertura censal.
-
-#### Hallazgo 3: Cohortes con supervivencia desigual
-
-- **(a) Qué:** la cohorte 2022 sobrevive **62.2%** a 2025 (2.5 años); la cohorte 2023 solo **35.4%** a 2025 (1.5 años); la cohorte 2024 sobrevive **90.2%** a 2025 (6 meses).
-- **(b) De dónde:** tabla `cohortes` en `data/denue.db` (construida con las CLEEs presentes en cada edición).
-- **(c) Cómo:** para cada CLEE nacido en el año X, se verifica si aparece en cada edición posterior; se calcula el % de supervivientes sobre el total de la cohorte.
-- **(d) Por qué:** la cohorte 2023 tiene supervivencia *anormalmente baja* porque nació justo antes del Censo Económico 2024. Al re-codificar las CLEEs, muchos aparecen como "muertos" en 2024 aunque sigan operando. La cohorte 2024 (post-censo) no sufre este efecto.
-- **(e) Limitaciones:** las cohortes 2023 y 2024 tienen ventanas temporales muy distintas (1.5 años vs 6 meses). Compararlas directamente no es justo.
-
-#### Hallazgo 4: Efecto ambiguo del Tren Maya en el sector servicios
-
-- **(a) Qué:** el índice de dinamismo del sector de servicios en el grupo A (Tren Maya operativo) es **−0.0045** en 2023→2024, pero **+0.0053** en 2024→2025. El grupo B invierte el patrón: **+0.0186 → −0.0192**.
-- **(b) De dónde:** cálculo a partir de las tablas de nacimientos y muertes, filtradas por `sector_servicios` y `grupo_tren`.
-- **(c) Cómo:** `(N_núcleo / N_total) − (M_núcleo / M_total)` para cada transición y grupo.
-- **(d) Por qué:** sugiere que el efecto del Tren Maya puede ser transitorio o que los municipios se afectan en momentos distintos. El grupo A muestra una recuperación tardía en 2025.
-- **(e) Limitaciones críticas:** la transición 2024→2025 es de solo 6 meses (no 12) y es post-censal, por lo que las "muertes" están infladas por el artefacto. Interpretar con mucha cautela.
+**Notebook:** `notebooks/03_tendencias.ipynb` y `notebooks/04_cohortes.ipynb`
 
 ---
 
-## Expansión multianual 2022–2025
+## 🎯 4. Hallazgos principales
 
-*[En desarrollo — rama `feature/expansion-2022-2025`]*
+### Hallazgo 1: Estabilidad estructural del tejido microempresarial
 
-El análisis se amplió de 2 a **4 ediciones** del DENUE para estudiar tendencias temporales y cohortes:
+**(a) Qué:** La proporción de microempresas (0-5 personas) se mantiene **estable en ~85%** durante los 4 años:
+- nov-2022: 84.5%
+- nov-2023: 84.4%
+- nov-2024: 85.8%
+- may-2025: 85.8%
 
-| Edición | Tipo |
-|---|---|
-| 11/2022 | regular |
-| 11/2023 | regular |
-| 11/2024 | exhaustiva (Censos Económicos) |
-| 05/2025 | regular |
+**(b) De dónde:** Tablas `denue_2022_11`, `denue_2023_11`, `denue_2024_11`, `denue_2025_05` en `data/denue.db`. Campo `per_ocu` (personal ocupado).
 
-- **Tres transiciones consecutivas** (2022→2023, 2023→2024, 2024→2025) con ventanas reales de **12m, 12m y 6m** (la última por usar la edición de mayo 2025).
-- **Artefacto censal 2024:** la transición 2023→2024 muestra una supervivencia anormal de **69.4%** (vs 99.0% en 2022→2023 y 97.5% en 2024→2025), producto de la re-codificación masiva de CLEEs del censo, no de un colapso real.
-- **Cohortes:** 66,991 CLEEs únicos; 35.9% presentes en las 4 ediciones; la cohorte 2022 sobrevive **62.2%** a 2025.
-- **Fusión Calkiní-Dzitbalché:** la edición 2022 no separa Dzitbalché; se fusiona con Calkiní para mantener la serie consistente.
+**(c) Cómo:** Para cada edición, contar unidades económicas por rango de `per_ocu`, dividir "0-5 personas" entre el total × 100.
 
-Ver notebooks `03_tendencias.ipynb` y `04_cohortes.ipynb`, y la página `docs/tendencias.html`.
+**(d) Por qué:** Refuerza la **paradoja del PIB campechano**. Ni siquiera con la apertura del Tren Maya (dic-2023) el tejido empresarial escala a empresas medianas o grandes. La economía local sigue atrapada en microescala.
+
+**(e) Limitaciones:** La categoría "0-5 personas" agrupa micronegocios muy heterogéneos (desde puestos informales hasta pequeñas empresas formales). No distingue entre ambos.
 
 ---
 
-## Dashboard interactivo
+### Hallazgo 2: Artefacto censal de 2024 (transición anómala)
 
-El proyecto incluye un dashboard web autocontenido, generado con Plotly y publicado en GitHub Pages.
+**(a) Qué:** La **tasa de supervivencia cae a 69.4%** en 2023→2024, mientras que en 2022→2023 es **99.0%** y en 2024→2025 es **97.5%**.
 
-- **URL pública:** `https://aremyesmeraldaortegon-creator.github.io/demografia-negocios-campeche/`
-- **Páginas:** `docs/index.html` (snapshot 2023–2024) y `docs/tendencias.html` (tendencias 2022–2025). Ambas autocontenidas.
-- **Secciones (snapshot):** KPIs, mapa coroplético de crecimiento neto por municipio, tasas por municipio, distribución por tamaño, sector de servicios, índice de dinamismo por grupo Tren Maya, top 5 y tabla completa con descarga de CSVs.
+| Transición | Ventana | Sobrevivientes | Nacimientos | Muertes | Tasa supervivencia |
+|-----------|---------|---------------|-------------|---------|-------------------|
+| 2022→2023 | 12 meses | 41,242 | 541 | 396 | **99.0%** |
+| 2023→2024 | 12 meses | 28,984 | 17,939 | 12,799 | **69.4%** ⚠️ |
+| 2024→2025 | **6 meses** | 45,752 | 1,656 | 1,171 | **97.5%** |
 
-### Regenerar el dashboard
+**(b) De dónde:** Tablas `t_2022_11__2023_11`, `t_2023_11__2024_11`, `t_2024_11__2025_05` en `data/denue.db`.
+
+**(c) Cómo:** S / U_base × 100 para cada transición.
+
+**(d) Por qué:** La edición nov-2024 viene de los **Censos Económicos 2024** (actualización exhaustiva), que **re-codifica masivamente las CLEEs**. Esto genera falsos "nacimientos + muertes" que el matching híbrido solo rescata parcialmente. **NO es un colapso real de negocios.**
+
+**(e) Limitaciones:** Los datos no permiten distinguir con certeza entre (i) cierre real, (ii) re-codificación administrativa, (iii) mejor cobertura censal. Además, la transición 2024→2025 cubre solo **6 meses** (no 12), lo que distorsiona las tasas comparativas.
+
+---
+
+### Hallazgo 3: Cohortes con supervivencia desigual
+
+**(a) Qué:** La **cohorte 2022** sobrevive **62.2%** a 2025 (2.5 años). La **cohorte 2023** solo **35.4%** a 2025 (1.5 años). La **cohorte 2024** sobrevive **90.2%** a 2025 (6 meses).
+
+**(b) De dónde:** Tabla `cohortes` en `data/denue.db`.
+
+**(c) Cómo:** Para cada CLEE nacido en año X, verificar si aparece en cada edición posterior. Calcular % de supervivientes / total cohorte.
+
+**(d) Por qué:** La cohorte 2023 tiene supervivencia **anormalmente baja** porque nació **justo antes del Censo Económico 2024**. Al re-codificar CLEEs, muchos aparecen como "muertos" en 2024 aunque sigan operando. La cohorte 2024 (post-censo) no sufre este efecto.
+
+**(e) Limitaciones:** Las cohortes tienen **ventanas temporales muy distintas** (2.5 años, 1.5 años, 6 meses). Comparar directamente no es justo.
+
+---
+
+### Hallazgo 4: Efecto ambiguo del Tren Maya en el sector servicios
+
+**(a) Qué:** El **índice de dinamismo del sector servicios** en el Grupo A (Tren Maya operativo desde dic-2023):
+
+| Transición | Global | Grupo A | Grupo B | Grupo C |
+|-----------|--------|---------|---------|---------|
+| 2022→2023 | +0.0256 | +0.0018 | +0.0233 | +0.0005 |
+| 2023→2024 | +0.0127 | **−0.0045** | +0.0186 | −0.0014 |
+| 2024→2025 | −0.0159 | **+0.0053** | −0.0192 | −0.0020 |
+
+**(b) De dónde:** Cálculo a partir de tablas `nacimientos` y `muertes`, filtradas por `sector_servicios` y `grupo_tren`.
+
+**(c) Cómo:** Índice = (N_núcleo / N_total) − (M_núcleo / M_total) para cada transición y grupo.
+
+**(d) Por qué:** Sugiere que el efecto del Tren Maya puede ser **transitorio** o que los municipios se afectan en **momentos distintos**. El Grupo A muestra una aparente recuperación tardía en 2024→2025, pero el Grupo B invierte el patrón (positivo → negativo).
+
+**(e) Limitaciones críticas:** La transición 2024→2025 es de **solo 6 meses** (no 12) y es **post-censal**, así que las "muertes" están infladas por el artefacto. **Interpretar con mucha cautela.**
+
+---
+
+## ⚠️ 5. Limitaciones generales
+
+1. **Ventana temporal corta:** Solo 2.5 años (nov-2022 a may-2025). Los efectos del Tren Maya pueden requerir más tiempo.
+
+2. **Artefacto censal 2024:** La edición exhaustiva re-codifica CLEEs y distorsiona las transiciones que la involucran.
+
+3. **Dependencia de datos oficiales:** El análisis depende del DENUE. Si el INEGI tiene errores, se arrastran.
+
+4. **Matching fuzzy con limitaciones:** Aunque refinamos para excluir nombres genéricos, el fuzzy matching sigue teniendo falsos positivos/negativos.
+
+5. **"Sector servicios" es amplio:** No distingue entre un hotel boutique y una taquería.
+
+6. **Ventanas temporales desiguales:** 12m, 12m y 6m — las tasas no son directamente comparables.
+
+---
+
+## 🔧 6. Cómo reproducir el proyecto
+
+### Requisitos
+
+- Python 3.10+
+- Token del INEGI (gratuito, para consultas puntuales vía API)
+
+### Instalación
 
 ```bash
-python dashboard/generar_dashboard.py     # docs/index.html (snapshot)
-python dashboard/generar_tendencias.py    # docs/tendencias.html (2022-2025)
-```
-
-> Requiere `plotly` (ya en `requirements.txt`). Leen `data/denue.db` y el GeoJSON `dashboard/campeche_municipios.geojson`.
-
-### Publicar en GitHub Pages
-
-1. Repositorio → **Settings** → **Pages**.
-2. En *Source*, elegir **Deploy from a branch**.
-3. Rama `main`, carpeta `/docs` → **Save**.
-
-Tras unos minutos, el dashboard queda disponible en la URL pública (el repositorio debe ser público para GitHub Pages gratuito).
-
----
-
-## Estructura del repositorio
-
-```
-demografia-negocios-campeche/
-├── data/              # Datos crudos y base SQLite (ignorados por git)
-├── dashboard/
-│   ├── generar_dashboard.py        # Genera docs/index.html
-│   ├── generar_tendencias.py       # Genera docs/tendencias.html
-│   └── campeche_municipios.geojson # GeoJSON de los municipios
-├── docs/
-│   ├── index.html      # Dashboard snapshot (autocontenido)
-│   ├── tendencias.html # Dashboard tendencias 2022-2025 (autocontenido)
-│   └── metodologia.md  # Metodología detallada
-├── etl/               # Scripts de extracción, transformación y carga
-├── notebooks/
-│   ├── 01_panorama_general.ipynb
-│   ├── 02_sector_servicios.ipynb
-│   ├── 03_tendencias.ipynb
-│   └── 04_cohortes.ipynb
-├── README.md
-├── .env.example       # Variables de entorno de ejemplo
-├── .gitignore
-└── requirements.txt   # Dependencias del proyecto
-```
-
-> **Nota:** el archivo `.env` (sin `.example`) contiene el token del INEGI y está ignorado por git vía `.gitignore`.
-
-## Instalación
-
-```bash
-git clone <url-del-repo>   # reemplazar por la URL real una vez publicado
+git clone https://github.com/aremyesmeraldaortegon-creator/demografia-negocios-campeche.git
 cd demografia-negocios-campeche
 python -m venv .venv
 .venv\Scripts\activate      # Windows
@@ -333,4 +239,77 @@ pip install -r requirements.txt
 cp .env.example .env         # y llena tu INEGI_TOKEN
 ```
 
-Los pasos de instalación han sido validados en Windows con Python 3.14.
+### Pipeline
+
+1. **Descargar los datos crudos** (manual desde el portal del INEGI):
+   ```
+   python etl/00_instrucciones_descarga.py
+   ```
+   Seguir las instrucciones para descargar las 4 ediciones del DENUE para Campeche.
+
+2. **Procesar los CSV:**
+   ```
+   python etl/01_procesar_descarga.py
+   ```
+
+3. **Matching y construcción de la base SQLite:**
+   ```
+   python etl/02_matching_demografia.py
+   ```
+
+4. **Análisis exploratorio** (abrir los notebooks):
+   ```
+   jupyter lab notebooks/
+   ```
+
+5. **Regenerar el dashboard:**
+   ```
+   python dashboard/generar_dashboard.py
+   python dashboard/generar_tendencias.py
+   ```
+
+---
+
+## 📂 7. Estructura del repositorio
+
+```
+demografia-negocios-campeche/
+├── data/                          # Datos crudos y base SQLite (ignorados por git)
+├── dashboard/
+│   ├── generar_dashboard.py       # Genera docs/index.html (snapshot)
+│   ├── generar_tendencias.py      # Genera docs/tendencias.html (multianual)
+│   └── campeche_municipios.geojson
+├── docs/
+│   ├── index.html                 # Dashboard principal (snapshot 2023-2024)
+│   ├── tendencias.html            # Dashboard multianual (2022-2025)
+│   └── metodologia.md             # Metodología detallada
+├── etl/
+│   ├── 00_instrucciones_descarga.py
+│   ├── 01_procesar_descarga.py
+│   └── 02_matching_demografia.py
+├── notebooks/
+│   ├── 01_panorama_general.ipynb
+│   ├── 02_sector_servicios.ipynb
+│   ├── 03_tendencias.ipynb
+│   └── 04_cohortes.ipynb
+├── README.md
+├── .env.example
+├── .gitignore
+└── requirements.txt
+```
+
+---
+
+## 📚 8. Fuentes y referencias
+
+- **DENUE (INEGI):** https://www.inegi.org.mx/programas/denue/
+- **Estudio de Demografía de los Negocios (EDN) del INEGI:** Metodología oficial del matching
+- **Censos Económicos 2024:** https://www.inegi.org.mx/programas/ce/2024/
+- **SCIAN:** https://www.inegi.org.mx/scian/
+
+---
+
+## ✍️ Autor
+
+**Aremy Esmeralda Ortega**  
+Proyecto de análisis de datos — 2026
