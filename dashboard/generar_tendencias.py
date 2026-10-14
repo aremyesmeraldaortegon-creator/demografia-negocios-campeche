@@ -307,11 +307,47 @@ def construir_html(figs, vals_supervivencia, pts_cohorte, df_indice, df_tam, pro
   <div class="sub">Cuatro ediciones del DENUE · la serie temporal y el artefacto censal de 2024</div>
 </header>
 
+
+<!-- ============================================ -->
+<!-- INTRODUCCIÓN DIDÁCTICA                       -->
+<!-- ============================================ -->
+<div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius:14px; padding:32px 36px; margin:28px 0; border-left:6px solid #d97706;">
+  <h2 style="margin:0 0 12px; font-size:1.4rem; color:#7a2020;">📖 ¿De qué trata este análisis?</h2>
+  <p style="font-size:1.05rem; line-height:1.7; margin:0 0 16px;">
+    Este análisis cuenta <strong>cuántos negocios abrieron, cuántos cerraron y cuántos siguen funcionando</strong> en los 13 municipios de Campeche. Lo hicimos comparando <strong>4 fotos</strong> del registro oficial de negocios del INEGI, tomadas entre noviembre 2022 y mayo 2025.
+  </p>
+  
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px;">
+    <div style="background:#fff; padding:20px; border-radius:10px;">
+      <h3 style="margin:0 0 8px; font-size:1.05rem; color:#14395e;">💡 ¿Por qué es importante?</h3>
+      <p style="margin:0; font-size:.95rem; line-height:1.6;">
+        Campeche es uno de los estados <strong>más ricos de México por el petróleo</strong>, pero esa riqueza no se ve en la vida cotidiana de sus municipios. Este análisis mira <strong>"debajo del PIB"</strong>, contando los negocios reales: las tienditas, los restaurantes, los talleres, las papelerías.
+      </p>
+    </div>
+    
+    <div style="background:#fff; padding:20px; border-radius:10px;">
+      <h3 style="margin:0 0 8px; font-size:1.05rem; color:#14395e;">🔧 ¿Cómo lo hicimos?</h3>
+      <ol style="margin:0; padding-left:20px; font-size:.95rem; line-height:1.6;">
+        <li>Descargamos <strong>4 fotos</strong> del registro oficial del INEGI</li>
+        <li>Comparamos esas fotos para ver qué negocios <strong>nacieron, murieron o sobrevivieron</strong></li>
+        <li>Analizamos los patrones por <strong>municipio, sector y tamaño</strong></li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 <section>
   <h2>1. Total de unidades económicas</h2>
   <div class="que-es">De 41,638 (nov-2022) a 47,408 (may-2025). Nota: la última edición es de mayo,
   así que el último tramo cubre solo 6 meses.</div>
   {figs["totales"]}
+  <div style="background:#fef3c7; border-left:4px solid #d97706; padding:16px 20px; border-radius:10px; margin-top:20px;">
+  <h4 style="margin:0 0 8px; color:#7a2020; font-size:1rem;">🎯 ¿Qué significa esta gráfica?</h4>
+  <p style="margin:0; font-size:.95rem; line-height:1.6;">
+    Imagina que cada negocio es un <strong>grano de arena</strong> en una playa. Entre 2022 y 2025, la playa creció de <strong>41,638 a 47,408 granos</strong>. Es decir, hoy hay más negocios que antes, pero el crecimiento fue especialmente fuerte entre noviembre 2023 y noviembre 2024.
+  </p>
+</div>
+
 </section>
 
 <section>
@@ -323,6 +359,16 @@ def construir_html(figs, vals_supervivencia, pts_cohorte, df_indice, df_tam, pro
   de negocios, sino la re-codificación masiva de CLEEs que introduce el censo económico.</div>
   {figs["supervivencia"]}
   {figs["entrada_salida"]}
+          <div style="background:#fef3c7; border-left:4px solid #d97706; padding:16px 20px; border-radius:10px; margin-top:20px;">
+          <h4 style="margin:0 0 8px; color:#7a2020; font-size:1rem;">🎯 ¿Qué significa esto en palabras simples?</h4>
+          <p style="margin:0; font-size:.95rem; line-height:1.6;">
+            En 2024 el INEGI hizo un <strong>censo más profundo de lo normal</strong>. Al revisar los negocios uno por uno, cambió el número de identificación de muchos. Eso hizo parecer que <strong>30 de cada 100 negocios "murieron"</strong> cuando en realidad siguen abiertos — solo cambiaron de número en el registro.
+          </p>
+          <p style="margin:12px 0 0; font-size:.95rem; line-height:1.6; font-style:italic; color:#5c3a00;">
+            Es como si le cambiaras el CURP a alguien: en el sistema parece que esa persona desapareció, pero sigue viva. Por eso el 69.4% es un <strong>"espejismo"</strong>, no una realidad.
+          </p>
+        </div>
+
 </section>
 
 <section>
@@ -333,6 +379,15 @@ def construir_html(figs, vals_supervivencia, pts_cohorte, df_indice, df_tam, pro
   <div class="que-es">Desglose por grupo de exposición al Tren Maya. En la transición 2024→2025 el
   grupo A es {ult["A"]:+.4f} ({gA_recupera}), el grupo B {ult["B"]:+.4f} y el grupo C {ult["C"]:+.4f}.</div>
   {figs["indice_grupos"]}
+          <div style="background:#fef3c7; border-left:4px solid #d97706; padding:16px 20px; border-radius:10px; margin-top:20px;">
+          <h4 style="margin:0 0 8px; color:#7a2020; font-size:1rem;">🎯 ¿Qué significa esto?</h4>
+          <p style="margin:0; font-size:.95rem; line-height:1.6;">
+            Piensa en un <strong>marcador de fútbol</strong>: el índice nos dice si el sector servicios está "ganando" terreno (positivo) o "perdiendo" terreno (negativo) frente al resto de la economía.
+          </p>
+          <p style="margin:12px 0 0; font-size:.95rem; line-height:1.6;">
+            En 2022-2023 el sector servicios ganaba terreno (+0.0256), en 2023-2024 ganaba menos (+0.0127), y en 2024-2025 <strong>perdió terreno</strong> (−0.0159). Los municipios con Tren Maya operativo (Grupo A) muestran una pequeña recuperación final, pero es pronto para concluir que sea un efecto real.
+          </p>
+        </div>
 </section>
 
 <section>
@@ -340,6 +395,15 @@ def construir_html(figs, vals_supervivencia, pts_cohorte, df_indice, df_tam, pro
   <div class="que-es">Proporción de microempresas (0-5 personas) en cada edición. Si baja, el tejido
   se está diversificando; si se mantiene, sigue dominado por lo micro.</div>
   {figs["microempresas"]}
+        <div style="background:#fef3c7; border-left:4px solid #d97706; padding:16px 20px; border-radius:10px; margin-top:20px;">
+          <h4 style="margin:0 0 8px; color:#7a2020; font-size:1rem;">🎯 ¿Qué significa esto?</h4>
+          <p style="margin:0; font-size:.95rem; line-height:1.6;">
+            Imagina la economía de Campeche como un <strong>pastel</strong>. El 85% de ese pastel son <strong>migajas</strong> (negocios de 0 a 5 personas) y solo el 15% son rebanadas más grandes. Y lo más importante: <strong>ese pastel no está cambiando</strong>. De 2022 a 2025, la proporción de microempresas se mantuvo prácticamente igual.
+          </p>
+          <p style="margin:12px 0 0; font-size:.95rem; line-height:1.6;">
+            Esto significa que, aunque hay más negocios, el tejido productivo <strong>no se está diversificando</strong> ni creando empresas medianas o grandes. La economía local sigue atrapada en la microescala.
+          </p>
+        </div>
   {tabla_tamano_html(df_tam)}
 </section>
 
@@ -352,7 +416,17 @@ def construir_html(figs, vals_supervivencia, pts_cohorte, df_indice, df_tam, pro
   <h2>6. Supervivencia por cohorte</h2>
   <div class="que-es">Qué porcentaje de cada generación de negocios sigue activa en may-2025.
   (La cohorte 2024 tiene ventana de solo 6 meses, por eso su tasa es alta.)</div>
-  {figs["cohortes"]}
+  {figs["cohortes"]}       
+ <div style="background:#fef3c7; border-left:4px solid #d97706; padding:16px 20px; border-radius:10px; margin-top:20px;">
+          <h4 style="margin:0 0 8px; color:#7a2020; font-size:1rem;">🎯 ¿Qué significa esto?</h4>
+          <p style="margin:0; font-size:.95rem; line-height:1.6;">
+            Una "cohorte" es como una <strong>generación de estudiantes</strong>. Si nacieron 100 negocios en 2022, <strong>62 de ellos siguen vivos</strong> en 2025 (2.5 años después). Si nacieron 100 en 2023, solo <strong>35 sobreviven</strong>. ¿Por qué tan pocos?
+          </p>
+          <p style="margin:12px 0 0; font-size:.95rem; line-height:1.6; font-style:italic; color:#5c3a00;">
+            Porque a esa generación le tocó vivir el <strong>cambio del censo 2024</strong>. Sus números de identificación cambiaron, así que en el registro parece que "murieron". Pero en realidad muchos siguen abiertos.
+          </p>
+        </div>
+
   <div class="hallazgo ok"><b>Hallazgo:</b> la cohorte 2022 sobrevive {pts_cohorte[-1]:.1f}% a 2025
   (≈2.5 años); la cohorte 2023, {df_cohortes.loc[df_cohortes['cohorte']=='2023_11','pct'].iloc[0]}%;
   y la cohorte 2024, {df_cohortes.loc[df_cohortes['cohorte']=='2024_11','pct'].iloc[0]}% (6 meses).</div>
