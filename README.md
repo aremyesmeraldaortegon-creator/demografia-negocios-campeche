@@ -8,8 +8,6 @@
 
 ---
 
-## 📌 Resumen ejecutivo
-
 Este proyecto analiza la evolución del **tejido empresarial de los 13 municipios de Campeche** entre noviembre 2022 y mayo 2025, usando **4 ediciones del DENUE** (Directorio Estadístico Nacional de Unidades Económicas) del INEGI. La pregunta central es: ¿qué tan dinámico es el tejido empresarial de Campeche, y cómo se relaciona con la paradoja de un PIB per cápita alto que no se refleja en la economía local?
 
 **Los hallazgos principales:**
@@ -22,13 +20,11 @@ Este proyecto analiza la evolución del **tejido empresarial de los 13 municipio
 
 ---
 
-## 🎯 Pregunta de investigación
-
-> **¿Qué tan dinámico es el tejido empresarial de los 13 municipios de Campeche, y cómo se relaciona ese dinamismo con la paradoja de un PIB per cápita alto que no se refleja en la economía local?**
+## ¿Qué tan dinámico es el tejido empresarial de los 13 municipios de Campeche, y cómo se relaciona ese dinamismo con la paradoja de un PIB per cápita alto que no se refleja en la economía local? 
 
 ---
 
-## 📖 1. Contexto: la paradoja del PIB campechano
+## 1. Contexto: la paradoja del PIB campechano
 
 Campeche figura entre los estados con **mayor PIB per cápita de México**, gracias a la extracción de hidrocarburos en la Sonda de Campeche. Sin embargo, ese indicador convive con una **economía local de escaso dinamismo** y niveles altos de rezago social.
 
@@ -45,7 +41,7 @@ Para saber qué tan sana está la economía local conviene mirar un indicador di
 
 ---
 
-## 🔬 2. Metodología
+## 2. Metodología
 
 ### 2.1 Fuente de datos: el DENUE
 
